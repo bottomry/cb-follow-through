@@ -42,7 +42,7 @@
       "title": "CB7 full-board minutes · June 1, 2010",
       "publisher": "Manhattan Community Board 7",
       "url": "https://www.nyc.gov/assets/manhattancb7/downloads/pdf/minutes/2010/minutes_06_10.pdf",
-      "locator": "PDF page 9 · final Columbus Avenue motion, after two failed amendments",
+      "locator": "PDF pages 5 and 9 · accepted six-month evaluation amendment, rejected board-control amendment and final Columbus Avenue vote",
       "excerpt": "VOTE: 23-19-1-0.",
       "checked_on": "2026-09-29",
       "review_method": "Official document text read through the web research service; no local original-file checksum is asserted.",
@@ -335,7 +335,7 @@
       "decision": {
         "date": "2010-06-01",
         "vote": "23 for · 19 against · 1 abstention",
-        "vote_basis": "Final adopted motion on PDF page 9. Two nearby failed amendment votes are excluded.",
+        "vote_basis": "Final adopted motion on PDF page 9. The accepted friendly amendment requiring a six-month evaluation and publication of results is included; the later failed amendment seeking CB7 control over future changes is excluded.",
         "source_ids": [
           "columbus-vote"
         ]
@@ -347,7 +347,7 @@
           "date_precision": "day",
           "type": "decision",
           "title": "The full board approves installation",
-          "summary": "CB7 adopts the protected-lane proposal between West 96th and West 77th. Two proposed amendments failed and are not treated as adopted conditions.",
+          "summary": "CB7 adopts the protected-lane proposal between West 96th and West 77th with a friendly amendment requiring evaluation after six months and publication of results to CB7 and the community. A later amendment seeking CB7 control over whether to revisit, end, expand, modify or make the lane permanent failed.",
           "source_ids": [
             "columbus-vote"
           ],
@@ -405,20 +405,22 @@
           "note": "DOT retrospectively names the exact original segment and installation year."
         },
         {
-          "text": "Return with post-installation information",
-          "state": "documented",
+          "text": "Evaluate after six months and publish results to CB7 and the community",
+          "state": "unknown",
           "source_ids": [
+            "columbus-vote",
             "columbus-evaluation"
           ],
-          "note": "A return presentation is recorded. This is observed follow-up, not an adopted six-month requirement: that amendment failed."
+          "note": "A later return presentation is recorded, but the selected evidence does not establish a six-month evaluation or publication of results to both CB7 and the community."
         }
       ],
       "match": "Reviewed exact-segment match: Columbus Avenue, West 96th–West 77th. The 2012 slides distinguish the already installed 2010 segment from proposed extensions, preventing a later phase from being mistaken for the original outcome.",
       "limits": [
         "2012 is the date of confirmation in the selected DOT document, not the year construction finished.",
-        "No claim is made that the two defeated amendments became conditions of approval."
+        "The accepted six-month evaluation and publication condition is distinct from the rejected amendment that would have required CB7 participation in decisions to revisit, end, expand, modify or make the lane permanent.",
+        "The October 2011 return presentation does not by itself establish timely compliance with the accepted six-month condition or publication to the community."
       ],
-      "next_action": "Read the 2011 discussion before proposing another change: it records concerns about loading, snow and comparison with other corridors."
+      "next_action": "Locate a dated six-month evaluation and evidence that its results were published to CB7 and the community; the October 2011 presentation alone does not close that condition."
     },
     {
       "id": "st-marks-place",

@@ -6,7 +6,7 @@ Three cases contain the full chain: a recorded board decision, a dated agency ac
 
 Dates describe records. Columbus's December 2012 presentation retrospectively confirms the original 2010 installation; the date does not imply construction finished in 2012. DOT's December 21, 2016 announcement confirms Amsterdam and Chrystie, but supplies no exact completion day. Chrystie's initial February 2015 request is retrospective and retains month precision.
 
-Voting context matters. Amsterdam uses the full-board tally, not its separate committee vote. Chrystie's item 3 is covered by the omnibus tally excluding only item 6. Columbus uses the final adopted motion; earlier failed amendments do not become requirements. St. Marks uses its item-specific vote, not the separate omnibus motion.
+Voting context matters. Amsterdam uses the full-board tally, not its separate committee vote. Chrystie's item 3 is covered by the omnibus tally excluding only item 6. Columbus's final motion includes an accepted friendly amendment requiring evaluation after six months and publication of results to CB7 and the community. A later, stronger amendment seeking CB7 control over whether to revisit, end, expand, modify or make the lane permanent failed and is not treated as adopted. The October 2011 return presentation establishes follow-up, but does not by itself establish timely compliance with the six-month condition or publication to the community. St. Marks uses its item-specific vote, not the separate omnibus motion.
 
 ## Coverage and review
 
