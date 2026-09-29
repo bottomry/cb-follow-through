@@ -1,15 +1,23 @@
 import {test} from 'node:test';
 import assert from 'node:assert/strict';
 import {readFile} from 'node:fs/promises';
-import {validate,escapeHTML,sourceHref,hasReviewedEvent,implemented,filterCases,dateLabel,handoff,safeURL} from '../site/model.mjs';
+import {validate,escapeHTML,sourceHref,hasReviewedEvent,implemented,timelineEvents,filterCases,dateLabel,handoff,safeURL} from '../site/model.mjs';
 const data=validate(JSON.parse(await readFile(new URL('../site/data/cases.json',import.meta.url),'utf8')));
 test('three source-backed end-to-end cases and one explicitly unresolved case',()=>{
  assert.equal(data.cases.length,4); assert.equal(data.cases.filter(implemented).length,3);
  for(const c of data.cases.filter(implemented)) {
-  for(const type of ['decision','agency_action','implementation']) assert.ok(c.events.some(e=>e.type===type && e.source_ids.length && e.reviewed));
+  for(const type of ['decision','agency_action','implementation']) assert.ok(timelineEvents(c).some(e=>e.type===type && e.source_ids.length && e.reviewed));
   assert.ok(c.match.length>20); assert.ok(c.limits.length);
  }
  const unresolved=data.cases.find(c=>c.id==='st-marks-place');assert.ok(unresolved);assert.equal(implemented(unresolved),false);
+});
+test('one canonical decision record drives timeline and export',()=>{
+ for(const c of data.cases) {
+  assert.equal(c.events.some(e=>e.type==='decision'),false);
+  const decisions=timelineEvents(c).filter(e=>e.type==='decision');assert.equal(decisions.length,1);assert.equal(decisions[0].title,c.decision.title);assert.equal(decisions[0].summary,c.decision.summary);assert.deepEqual(decisions[0].source_ids,c.decision.source_ids);
+  assert.equal(handoff(c,data.sources).split(c.decision.title).length-1,1);
+ }
+ const duplicate=structuredClone(data);duplicate.cases[0].events.push({...duplicate.cases[0].decision,id:'second-decision',type:'decision'});assert.throws(()=>validate(duplicate),/event semantics/);
 });
 test('a proposal and board vote cannot produce a completed outcome',()=>{
  const c=structuredClone(data.cases[0]);c.events=c.events.filter(e=>e.type!=='implementation');assert.equal(implemented(c),false);
@@ -45,6 +53,7 @@ test('case and source identifiers and source pages are constrained',()=>{
   [d=>d.cases[0].id=123,/casefile/],
   [d=>d.sources[0].id='x<script>',/source record/],
   [d=>d.sources[0].id=null,/source record/],
+  [d=>delete d.cases[0].decision.id,/decision record/],
   [d=>delete d.cases[0].events[0].id,/event record/],
   [d=>d.sources[0].page=0,/source record/],
   [d=>d.sources[0].page=1.5,/source record/],
@@ -57,7 +66,7 @@ test('static corpus claim fields are complete nonempty strings',()=>{
  for(const [select,fields,message] of [
   [d=>d.sources[0],['title','publisher','url','locator','excerpt','review_method'],/source record/],
   [d=>d.cases[0],['title','number','board','agency','corridor','period','subtitle','summary','match','next_action'],/casefile/],
-  [d=>d.cases[0].decision,['vote','vote_basis'],/decision record/],
+  [d=>d.cases[0].decision,['title','summary','basis','vote','vote_basis'],/decision record/],
   [d=>d.cases[0].events[0],['title','summary','basis'],/event record/],
   [d=>d.cases[0].requests[0],['text','note'],/request record/]
  ]) for(const field of fields) {
@@ -71,7 +80,7 @@ test('top-level arrays, review date and optional source fields are typed',()=>{
   [d=>d.reviewed_on='2026-02-31',/Unsupported/],
   [d=>d.sources=[],/Unsupported/],
   [d=>d.cases=[],/Unsupported/],
-  [d=>d.cases[0].events=[],/casefile/],
+  [d=>d.cases[0].events=null,/casefile/],
   [d=>d.cases[0].requests=[],/casefile/],
   [d=>d.cases[0].limits=[],/casefile/],
   [d=>d.sources[0].access_note=7,/source record/],
@@ -97,6 +106,7 @@ test('dates are real and event precision matches the date shape',()=>{
  ]) {
   const invalid=structuredClone(data);mutate(invalid);assert.throws(()=>validate(invalid),/date/);
  }
+ const missingDecisionPrecision=structuredClone(data);delete missingDecisionPrecision.cases[0].decision.date_precision;assert.throws(()=>validate(missingDecisionPrecision),/decision record/);
  const leapDay=structuredClone(data);leapDay.cases[0].decision.date='2024-02-29';leapDay.cases[0].events[0].date='2016-02-29';assert.doesNotThrow(()=>validate(leapDay));
  const month=structuredClone(data);month.cases[0].events[0].date='2016-02';month.cases[0].events[0].date_precision='month';assert.doesNotThrow(()=>validate(month));
 });

@@ -131,12 +131,18 @@
       "topic": "Street safety",
       "summary": "CB7 supported a complete-street design. DOT later named the same stretch of Amsterdam Avenue among its completed 2016 projects.",
       "decision": {
+        "id": "am-vote",
         "date": "2016-02-02",
+        "date_precision": "day",
+        "title": "The full board supports the project",
+        "summary": "CB7 adopted support for the redesign, while also requesting outreach and continuing evaluation.",
         "vote": "28 for · 13 against · 2 abstentions",
         "vote_basis": "Full-board vote on the named resolution. The separate committee tally is not substituted.",
         "source_ids": [
           "amsterdam-resolution"
-        ]
+        ],
+        "reviewed": true,
+        "basis": "Direct published record"
       },
       "events": [
         {
@@ -148,19 +154,6 @@
           "summary": "DOT presented a protected northbound lane and scheduled Phase 1 from West 72nd to West 110th for spring implementation. This was a plan, not evidence of completion.",
           "source_ids": [
             "amsterdam-design"
-          ],
-          "reviewed": true,
-          "basis": "Direct published record"
-        },
-        {
-          "id": "am-vote",
-          "date": "2016-02-02",
-          "date_precision": "day",
-          "type": "decision",
-          "title": "The full board supports the project",
-          "summary": "CB7 adopted support for the redesign, while also requesting outreach and continuing evaluation.",
-          "source_ids": [
-            "amsterdam-resolution"
           ],
           "reviewed": true,
           "basis": "Direct published record"
@@ -219,12 +212,18 @@
       "topic": "Street safety",
       "summary": "The record connects a request for safety improvements to DOT’s design, a full-board endorsement and a later completion announcement.",
       "decision": {
+        "id": "ch-vote",
         "date": "2016-05-24",
+        "date_precision": "day",
+        "title": "The full board supports the final plan",
+        "summary": "CB3 supports DOT’s protected-lane plan following the reported workshop. The adopted Transportation vote includes this item.",
         "vote": "40 for · 0 against · 0 abstentions",
         "vote_basis": "Transportation item 3 is covered by the omnibus vote excluding item 6. The separate item 6 tally is not used.",
         "source_ids": [
           "chrystie-vote"
-        ]
+        ],
+        "reviewed": true,
+        "basis": "Direct published record"
       },
       "events": [
         {
@@ -265,19 +264,6 @@
           ],
           "reviewed": true,
           "basis": "Workshop reported in later board minutes"
-        },
-        {
-          "id": "ch-vote",
-          "date": "2016-05-24",
-          "date_precision": "day",
-          "type": "decision",
-          "title": "The full board supports the final plan",
-          "summary": "CB3 supports DOT’s protected-lane plan following the reported workshop. The adopted Transportation vote includes this item.",
-          "source_ids": [
-            "chrystie-vote"
-          ],
-          "reviewed": true,
-          "basis": "Direct published record"
         },
         {
           "id": "ch-complete",
@@ -333,27 +319,20 @@
       "topic": "Street safety",
       "summary": "A full-board vote is followed by an installation update, a return presentation and DOT’s retrospective confirmation of the original segment.",
       "decision": {
+        "id": "co-vote",
         "date": "2010-06-01",
+        "date_precision": "day",
+        "title": "The full board approves installation",
+        "summary": "CB7 adopts the protected-lane proposal between West 96th and West 77th with a friendly amendment requiring evaluation after six months and publication of results to CB7 and the community. A later amendment seeking CB7 control over whether to revisit, end, expand, modify or make the lane permanent failed.",
         "vote": "23 for · 19 against · 1 abstention",
         "vote_basis": "Final adopted motion on PDF page 9. The accepted friendly amendment requiring a six-month evaluation and publication of results is included; the later failed amendment seeking CB7 control over future changes is excluded.",
         "source_ids": [
           "columbus-vote"
-        ]
+        ],
+        "reviewed": true,
+        "basis": "Direct published record"
       },
       "events": [
-        {
-          "id": "co-vote",
-          "date": "2010-06-01",
-          "date_precision": "day",
-          "type": "decision",
-          "title": "The full board approves installation",
-          "summary": "CB7 adopts the protected-lane proposal between West 96th and West 77th with a friendly amendment requiring evaluation after six months and publication of results to CB7 and the community. A later amendment seeking CB7 control over whether to revisit, end, expand, modify or make the lane permanent failed.",
-          "source_ids": [
-            "columbus-vote"
-          ],
-          "reviewed": true,
-          "basis": "Direct published record"
-        },
         {
           "id": "co-update",
           "date": "2010-09-29",
@@ -436,28 +415,20 @@
       "topic": "Street safety",
       "summary": "A reviewed public seed records CB3 supporting DOT’s standard bike-lane proposal. This case intentionally has no verified implementation event.",
       "decision": {
+        "id": "sm-vote",
         "date": "2026-05-26",
+        "date_precision": "day",
+        "title": "The board supports the proposal",
+        "summary": "The inherited reviewed record documents support for a standard lane and outreach about parking changes. The original PDF was not re-fetched successfully in this research pass.",
         "vote": "34 for · 1 against · 0 abstentions",
         "vote_basis": "Named Transportation item 2 tally in the inherited public pilot. Other-item and excluding-omnibus tallies are rejected.",
         "source_ids": [
           "stmarks-vote"
-        ]
+        ],
+        "reviewed": true,
+        "basis": "Inherited reviewed public record; direct re-fetch unavailable"
       },
-      "events": [
-        {
-          "id": "sm-vote",
-          "date": "2026-05-26",
-          "date_precision": "day",
-          "type": "decision",
-          "title": "The board supports the proposal",
-          "summary": "The inherited reviewed record documents support for a standard lane and outreach about parking changes. The original PDF was not re-fetched successfully in this research pass.",
-          "source_ids": [
-            "stmarks-vote"
-          ],
-          "reviewed": true,
-          "basis": "Inherited reviewed public record; direct re-fetch unavailable"
-        }
-      ],
+      "events": [],
       "requests": [
         {
           "text": "Implement the standard bike lane",

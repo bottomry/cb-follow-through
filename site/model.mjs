@@ -1,7 +1,7 @@
 export function safeURL(value) { try { const u = new URL(value); return u.protocol === 'https:' ? u.href : null; } catch { return null; } }
 export const escapeHTML = value => String(value ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 export function sourceHref(source) { const value=safeURL(source?.url); if (!value) return null; if (!Object.hasOwn(source,'page')) return value; if (!Number.isSafeInteger(source.page) || source.page < 1) return null; const url=new URL(value); url.hash=`page=${source.page}`; return url.href; }
-const eventTypes=new Set(['request','decision','agency_action','evaluation','implementation']);
+const eventTypes=new Set(['request','agency_action','evaluation','implementation']);
 const requestStates=new Set(['documented','unknown']);
 const slug=/^[a-z0-9]+(?:-[a-z0-9]+)*$/;
 const isRecord=value=>value !== null && typeof value === 'object' && !Array.isArray(value);
@@ -27,11 +27,11 @@ export function validate(data) {
   sources.add(s.id);
  }
  for (const c of data.cases) {
-  if (!hasSlug(c?.id) || ids.has(c.id) || !hasTexts(c,['title','number','board','agency','corridor','period','subtitle','summary','match','next_action']) || !Array.isArray(c.limits) || !c.limits.length || !c.limits.every(hasText) || !Array.isArray(c.events) || !c.events.length || !Array.isArray(c.requests) || !c.requests.length) throw Error('Invalid casefile.');
+  if (!hasSlug(c?.id) || ids.has(c.id) || !hasTexts(c,['title','number','board','agency','corridor','period','subtitle','summary','match','next_action']) || !Array.isArray(c.limits) || !c.limits.length || !c.limits.every(hasText) || !Array.isArray(c.events) || !Array.isArray(c.requests) || !c.requests.length) throw Error('Invalid casefile.');
   ids.add(c.id);
-  if (!hasTexts(c.decision,['vote','vote_basis'])) throw Error('Invalid decision record.');
-  if (!validDate(c.decision.date,'day')) throw Error('Decision needs a real day-precision date.');
-  const eventIds=new Set();
+  if (!hasSlug(c.decision?.id) || !hasTexts(c.decision,['title','summary','basis','vote','vote_basis']) || c.decision.date_precision !== 'day' || c.decision.reviewed !== true) throw Error('Invalid decision record.');
+  if (!validDate(c.decision.date,c.decision.date_precision)) throw Error('Decision needs a real day-precision date.');
+  const eventIds=new Set([c.decision.id]);
   for (const e of c.events) {
    if (!hasSlug(e?.id) || eventIds.has(e.id) || !hasTexts(e,['title','summary','basis'])) throw Error('Invalid event record.');
    eventIds.add(e.id);
@@ -51,6 +51,7 @@ export function validate(data) {
 }
 export const hasReviewedEvent = (c,type) => c.events.some(e => e.type === type && e.reviewed === true && e.source_ids.length);
 export const implemented = c => hasReviewedEvent(c,'implementation');
+export const timelineEvents = c => [{...c.decision,type:'decision'},...c.events];
 export function filterCases(cases, query = '', status = 'all') { const q = query.trim().toLowerCase(); return cases.filter(c => (status === 'all' || implemented(c) === (status === 'documented')) && [c.title,c.board,c.corridor,c.summary,c.agency].join(' ').toLowerCase().includes(q)); }
 export function dateLabel(value) { return new Intl.DateTimeFormat('en-US', {month:'short', ...(value.length > 7 ? {day:'numeric'} : {}), year:'numeric', timeZone:'UTC'}).format(new Date(value.length === 7 ? value+'-01T12:00:00Z' : value+'T12:00:00Z')); }
-export function handoff(c, sources, note = '') { const ids = new Set([...c.decision.source_ids,...c.events.flatMap(e => e.source_ids),...c.requests.flatMap(r => r.source_ids)]); return `${c.title} — ${c.board}\n${c.corridor}\nStatus: ${implemented(c) ? 'Implementation documented' : 'Outcome unknown in this corpus'}\n\n${c.summary}\n\n${c.events.map(e => `${e.reviewed === true ? '' : 'UNREVIEWED · '}${dateLabel(e.date)} — ${e.title}\n${e.summary}`).join('\n\n')}\n\nLIMITS\n${c.limits.join('\n')}\n\nSOURCES\n${sources.filter(s => ids.has(s.id)).map(s => `${s.title}\n${s.locator}\n${s.url}\n${s.review_method}`).join('\n\n')}\n\nLOCAL DRAFT — UNREVIEWED\n${note || '(No draft)'}\n`; }
+export function handoff(c, sources, note = '') { const ids = new Set([...c.decision.source_ids,...c.events.flatMap(e => e.source_ids),...c.requests.flatMap(r => r.source_ids)]); return `${c.title} — ${c.board}\n${c.corridor}\nStatus: ${implemented(c) ? 'Implementation documented' : 'Outcome unknown in this corpus'}\n\n${c.summary}\n\n${timelineEvents(c).map(e => `${e.reviewed === true ? '' : 'UNREVIEWED · '}${dateLabel(e.date)} — ${e.title}\n${e.summary}`).join('\n\n')}\n\nLIMITS\n${c.limits.join('\n')}\n\nSOURCES\n${sources.filter(s => ids.has(s.id)).map(s => `${s.title}\n${s.locator}\n${s.url}\n${s.review_method}`).join('\n\n')}\n\nLOCAL DRAFT — UNREVIEWED\n${note || '(No draft)'}\n`; }
