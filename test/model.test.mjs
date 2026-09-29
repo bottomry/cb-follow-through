@@ -17,7 +17,7 @@ test('a proposal and board vote cannot produce a completed outcome',()=>{
 });
 test('only reviewed events establish evidence-chain stages',()=>{
  const corpus=structuredClone(data);const c=corpus.cases[0];const agency=c.events.find(e=>e.type==='agency_action');
- assert.equal(hasReviewedEvent(c,'agency_action'),true);agency.reviewed=false;assert.doesNotThrow(()=>validate(corpus));assert.equal(hasReviewedEvent(c,'agency_action'),false);
+ assert.equal(hasReviewedEvent(c,'agency_action'),true);agency.reviewed=false;assert.throws(()=>validate(corpus),/event semantics/);assert.equal(hasReviewedEvent(c,'agency_action'),false);
  assert.equal(hasReviewedEvent(c,'implementation'),true);c.events.find(e=>e.type==='implementation').reviewed=false;assert.equal(implemented(c),false);
 });
 test('filtering is case insensitive, combined and explicit about empty results',()=>{
@@ -25,6 +25,7 @@ test('filtering is case insensitive, combined and explicit about empty results',
 });
 test('handoff retains source URLs, limits and segregated draft notes',()=>{
  const before=JSON.stringify(data);const text=handoff(data.cases[0],data.sources,'Unverified candidate https://example.org/');assert.match(text,/LOCAL DRAFT — UNREVIEWED/);assert.match(text,/https:\/\/www.nyc.gov/);assert.match(text,/LIMITS/);assert.match(text,/Unverified candidate/);assert.equal(JSON.stringify(data),before);
+ const direct=structuredClone(data.cases[0]);const event=direct.events.find(e=>e.type==='implementation');event.reviewed=false;const directText=handoff(direct,data.sources);const row=directText.split('\n').find(line=>line.includes(event.title));assert.equal(row,`UNREVIEWED · ${dateLabel(event.date)} — ${event.title}`);assert.match(directText,/Status: Outcome unknown in this corpus/);
 });
 test('source URLs reject executable schemes and data references fail closed',()=>{
  for(const value of ['javascript:alert(1)','data:text/html,test','http://example.org','garbage'])assert.equal(safeURL(value),null);
@@ -60,7 +61,7 @@ test('event and request semantics reject unsupported values',()=>{
  ]) {
   const invalid=structuredClone(data);mutate(invalid);assert.throws(()=>validate(invalid),message);
  }
- const unreviewed=structuredClone(data);unreviewed.cases[0].events[0].reviewed=false;assert.doesNotThrow(()=>validate(unreviewed));
+ const unreviewed=structuredClone(data);unreviewed.cases[0].events[0].reviewed=false;assert.throws(()=>validate(unreviewed),/event semantics/);
 });
 test('date precision and retrospective confirmation are preserved',()=>{
  assert.equal(dateLabel('2015-02'),'Feb 2015');assert.equal(dateLabel('2016-12-21'),'Dec 21, 2016');
