@@ -1,6 +1,9 @@
 export function safeURL(value) { try { const u = new URL(value); return u.protocol === 'https:' ? u.href : null; } catch { return null; } }
+export const escapeHTML = value => String(value ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+export function sourceHref(source) { const value=safeURL(source?.url); if (!value) return null; if (source.page === undefined) return value; if (!Number.isSafeInteger(source.page) || source.page < 1) return null; const url=new URL(value); url.hash=`page=${source.page}`; return url.href; }
 const eventTypes=new Set(['request','decision','agency_action','evaluation','implementation']);
 const requestStates=new Set(['documented','unknown']);
+const slug=/^[a-z0-9]+(?:-[a-z0-9]+)*$/;
 function validDate(value, precision) {
  const match = typeof value === 'string' && value.match(precision === 'month' ? /^(\d{4})-(\d{2})$/ : precision === 'day' ? /^(\d{4})-(\d{2})-(\d{2})$/ : /$a/);
  if (!match) return false;
@@ -14,9 +17,9 @@ function validDate(value, precision) {
 export function validate(data) {
  if (data?.schema_version !== 1 || !Array.isArray(data.cases) || !Array.isArray(data.sources)) throw Error('Unsupported casefile data.');
  const ids = new Set(); const sources = new Set();
- for (const s of data.sources) { if (!s.id || sources.has(s.id) || !safeURL(s.url) || !s.title || !s.locator) throw Error('Invalid source record.'); sources.add(s.id); }
+ for (const s of data.sources) { if (!slug.test(s.id) || sources.has(s.id) || !sourceHref(s) || !s.title || !s.locator) throw Error('Invalid source record.'); sources.add(s.id); }
  for (const c of data.cases) {
-  if (!c.id || ids.has(c.id) || !c.title || !c.decision || !Array.isArray(c.events) || !Array.isArray(c.requests)) throw Error('Invalid casefile.'); ids.add(c.id);
+  if (!slug.test(c.id) || ids.has(c.id) || !c.title || !c.decision || !Array.isArray(c.events) || !Array.isArray(c.requests)) throw Error('Invalid casefile.'); ids.add(c.id);
   for (const row of [c.decision, ...c.events, ...c.requests]) {
    if (!Array.isArray(row.source_ids) || !row.source_ids.length) throw Error('Evidence record needs source references.');
    if (row.source_ids.some(id => !sources.has(id))) throw Error('Unresolved source reference.');

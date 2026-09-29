@@ -1,7 +1,7 @@
 import {test} from 'node:test';
 import assert from 'node:assert/strict';
 import {readFile} from 'node:fs/promises';
-import {validate,hasReviewedEvent,implemented,filterCases,dateLabel,handoff,safeURL} from '../site/model.mjs';
+import {validate,escapeHTML,sourceHref,hasReviewedEvent,implemented,filterCases,dateLabel,handoff,safeURL} from '../site/model.mjs';
 const data=validate(JSON.parse(await readFile(new URL('../site/data/cases.json',import.meta.url),'utf8')));
 test('three source-backed end-to-end cases and one explicitly unresolved case',()=>{
  assert.equal(data.cases.length,4); assert.equal(data.cases.filter(implemented).length,3);
@@ -33,6 +33,22 @@ test('source URLs reject executable schemes and data references fail closed',()=
  const invalid=structuredClone(data);invalid.cases[0].events[0].source_ids=['absent'];assert.throws(()=>validate(invalid),/source reference/);
  const bad=structuredClone(data);bad.sources[0].url='javascript:alert(1)';assert.throws(()=>validate(bad),/source record/);
  assert.throws(()=>validate({}),/Unsupported/);
+});
+test('render formatters encode hostile values and compose source fragments safely',()=>{
+ assert.equal(escapeHTML('x" onclick="alert(1)<script>'), 'x&quot; onclick=&quot;alert(1)&lt;script&gt;');
+ assert.equal(sourceHref({url:'https://example.org/source',page:9}),'https://example.org/source#page=9');
+ assert.equal(sourceHref({url:'https://example.org/source',page:'9" onclick="alert(1)'}),null);
+});
+test('case and source identifiers and source pages are constrained',()=>{
+ for(const [mutate,message] of [
+  [d=>d.cases[0].id='x" onclick="alert(1)',/casefile/],
+  [d=>d.sources[0].id='x<script>',/source record/],
+  [d=>d.sources[0].page=0,/source record/],
+  [d=>d.sources[0].page=1.5,/source record/],
+  [d=>d.sources[0].page='1" onclick="alert(1)',/source record/]
+ ]) {
+  const invalid=structuredClone(data);mutate(invalid);assert.throws(()=>validate(invalid),message);
+ }
 });
 test('every evidence row requires at least one source reference',()=>{
  for(const select of [d=>d.cases[0].decision,d=>d.cases[0].events[0],d=>d.cases[0].requests[0]]) {
