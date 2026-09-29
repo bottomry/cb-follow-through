@@ -47,6 +47,16 @@ test('dates are real and event precision matches the date shape',()=>{
  const leapDay=structuredClone(data);leapDay.cases[0].decision.date='2024-02-29';leapDay.cases[0].events[0].date='2016-02-29';assert.doesNotThrow(()=>validate(leapDay));
  const month=structuredClone(data);month.cases[0].events[0].date='2016-02';month.cases[0].events[0].date_precision='month';assert.doesNotThrow(()=>validate(month));
 });
+test('event and request semantics reject unsupported values',()=>{
+ for(const [mutate,message] of [
+  [d=>d.cases[0].events[0].type='implementaton',/event semantics/],
+  [d=>d.cases[0].events[0].reviewed='true',/event semantics/],
+  [d=>d.cases[0].requests[0].state='documented ',/request state/]
+ ]) {
+  const invalid=structuredClone(data);mutate(invalid);assert.throws(()=>validate(invalid),message);
+ }
+ const unreviewed=structuredClone(data);unreviewed.cases[0].events[0].reviewed=false;assert.doesNotThrow(()=>validate(unreviewed));
+});
 test('date precision and retrospective confirmation are preserved',()=>{
  assert.equal(dateLabel('2015-02'),'Feb 2015');assert.equal(dateLabel('2016-12-21'),'Dec 21, 2016');
  const columbus=data.cases.find(c=>c.id==='columbus-avenue');assert.equal(columbus.events.find(e=>e.type==='implementation').date,'2012-12-11');
