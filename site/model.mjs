@@ -1,12 +1,26 @@
 export function safeURL(value) { try { const u = new URL(value); return u.protocol === 'https:' ? u.href : null; } catch { return null; } }
+function validDate(value, precision) {
+ const match = typeof value === 'string' && value.match(precision === 'month' ? /^(\d{4})-(\d{2})$/ : precision === 'day' ? /^(\d{4})-(\d{2})-(\d{2})$/ : /$a/);
+ if (!match) return false;
+ const year=Number(match[1]), month=Number(match[2]);
+ if (month < 1 || month > 12) return false;
+ if (precision === 'month') return true;
+ const leap=year%4===0 && (year%100!==0 || year%400===0);
+ const days=[31,leap?29:28,31,30,31,30,31,31,30,31,30,31];
+ const day=Number(match[3]); return day >= 1 && day <= days[month-1];
+}
 export function validate(data) {
  if (data?.schema_version !== 1 || !Array.isArray(data.cases) || !Array.isArray(data.sources)) throw Error('Unsupported casefile data.');
  const ids = new Set(); const sources = new Set();
  for (const s of data.sources) { if (!s.id || sources.has(s.id) || !safeURL(s.url) || !s.title || !s.locator) throw Error('Invalid source record.'); sources.add(s.id); }
  for (const c of data.cases) {
   if (!c.id || ids.has(c.id) || !c.title || !c.decision || !Array.isArray(c.events) || !Array.isArray(c.requests)) throw Error('Invalid casefile.'); ids.add(c.id);
-  for (const row of [c.decision, ...c.events, ...c.requests]) if (!Array.isArray(row.source_ids) || row.source_ids.some(id => !sources.has(id))) throw Error('Unresolved source reference.');
-  for (const e of c.events) if (!e.source_ids.length || !/^\d{4}-\d{2}(-\d{2})?$/.test(e.date)) throw Error('Event needs dated evidence.');
+  for (const row of [c.decision, ...c.events, ...c.requests]) {
+   if (!Array.isArray(row.source_ids) || !row.source_ids.length) throw Error('Evidence record needs source references.');
+   if (row.source_ids.some(id => !sources.has(id))) throw Error('Unresolved source reference.');
+  }
+  if (!validDate(c.decision.date,'day')) throw Error('Decision needs a real day-precision date.');
+  for (const e of c.events) if (!validDate(e.date,e.date_precision)) throw Error('Event needs a real date matching its declared precision.');
  }
  return data;
 }

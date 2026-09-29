@@ -28,6 +28,25 @@ test('source URLs reject executable schemes and data references fail closed',()=
  const bad=structuredClone(data);bad.sources[0].url='javascript:alert(1)';assert.throws(()=>validate(bad),/source record/);
  assert.throws(()=>validate({}),/Unsupported/);
 });
+test('every evidence row requires at least one source reference',()=>{
+ for(const select of [d=>d.cases[0].decision,d=>d.cases[0].events[0],d=>d.cases[0].requests[0]]) {
+  const invalid=structuredClone(data);select(invalid).source_ids=[];assert.throws(()=>validate(invalid),/source reference/);
+ }
+});
+test('dates are real and event precision matches the date shape',()=>{
+ for(const mutate of [
+  d=>d.cases[0].decision.date='2026-02-29',
+  d=>d.cases[0].events[0].date='2026-02-31',
+  d=>d.cases[0].events[0].date='2016-13',
+  d=>delete d.cases[0].events[0].date_precision,
+  d=>d.cases[0].events[0].date_precision='month',
+  d=>{d.cases[0].events[0].date='2016-02';d.cases[0].events[0].date_precision='day';}
+ ]) {
+  const invalid=structuredClone(data);mutate(invalid);assert.throws(()=>validate(invalid),/date/);
+ }
+ const leapDay=structuredClone(data);leapDay.cases[0].decision.date='2024-02-29';leapDay.cases[0].events[0].date='2016-02-29';assert.doesNotThrow(()=>validate(leapDay));
+ const month=structuredClone(data);month.cases[0].events[0].date='2016-02';month.cases[0].events[0].date_precision='month';assert.doesNotThrow(()=>validate(month));
+});
 test('date precision and retrospective confirmation are preserved',()=>{
  assert.equal(dateLabel('2015-02'),'Feb 2015');assert.equal(dateLabel('2016-12-21'),'Dec 21, 2016');
  const columbus=data.cases.find(c=>c.id==='columbus-avenue');assert.equal(columbus.events.find(e=>e.type==='implementation').date,'2012-12-11');
