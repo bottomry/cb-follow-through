@@ -42,10 +42,41 @@ test('render formatters encode hostile values and compose source fragments safel
 test('case and source identifiers and source pages are constrained',()=>{
  for(const [mutate,message] of [
   [d=>d.cases[0].id='x" onclick="alert(1)',/casefile/],
+  [d=>d.cases[0].id=123,/casefile/],
   [d=>d.sources[0].id='x<script>',/source record/],
+  [d=>d.sources[0].id=null,/source record/],
+  [d=>delete d.cases[0].events[0].id,/event record/],
   [d=>d.sources[0].page=0,/source record/],
   [d=>d.sources[0].page=1.5,/source record/],
   [d=>d.sources[0].page='1" onclick="alert(1)',/source record/]
+ ]) {
+  const invalid=structuredClone(data);mutate(invalid);assert.throws(()=>validate(invalid),message);
+ }
+});
+test('static corpus claim fields are complete nonempty strings',()=>{
+ for(const [select,fields,message] of [
+  [d=>d.sources[0],['title','publisher','url','locator','excerpt','review_method'],/source record/],
+  [d=>d.cases[0],['title','number','board','agency','corridor','period','subtitle','summary','match','next_action'],/casefile/],
+  [d=>d.cases[0].decision,['vote','vote_basis'],/decision record/],
+  [d=>d.cases[0].events[0],['title','summary','basis'],/event record/],
+  [d=>d.cases[0].requests[0],['text','note'],/request record/]
+ ]) for(const field of fields) {
+  const invalid=structuredClone(data);select(invalid)[field]='   ';assert.throws(()=>validate(invalid),message);
+ }
+ const badLimit=structuredClone(data);badLimit.cases[0].limits[0]='';assert.throws(()=>validate(badLimit),/casefile/);
+});
+test('top-level arrays, review date and optional source fields are typed',()=>{
+ for(const [mutate,message] of [
+  [d=>d.scope='',/Unsupported/],
+  [d=>d.reviewed_on='2026-02-31',/Unsupported/],
+  [d=>d.sources=[],/Unsupported/],
+  [d=>d.cases=[],/Unsupported/],
+  [d=>d.cases[0].events=[],/casefile/],
+  [d=>d.cases[0].requests=[],/casefile/],
+  [d=>d.cases[0].limits=[],/casefile/],
+  [d=>d.sources[0].access_note=7,/source record/],
+  [d=>d.sources[0].upstream={},/source record/],
+  [d=>d.sources[0].page=undefined,/source record/]
  ]) {
   const invalid=structuredClone(data);mutate(invalid);assert.throws(()=>validate(invalid),message);
  }
