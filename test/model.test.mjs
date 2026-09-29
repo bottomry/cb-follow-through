@@ -1,7 +1,7 @@
 import {test} from 'node:test';
 import assert from 'node:assert/strict';
 import {readFile} from 'node:fs/promises';
-import {validate,escapeHTML,sourceHref,hasReviewedEvent,implemented,timelineEvents,filterCases,dateLabel,handoff,safeURL} from '../site/model.mjs';
+import {validate,escapeHTML,sourceHref,hasReviewedEvent,implemented,timelineEvents,filterCases,dateLabel,corpusMetadata,handoff,safeURL} from '../site/model.mjs';
 const data=validate(JSON.parse(await readFile(new URL('../site/data/cases.json',import.meta.url),'utf8')));
 test('three source-backed end-to-end cases and one explicitly unresolved case',()=>{
  assert.equal(data.cases.length,4); assert.equal(data.cases.filter(implemented).length,3);
@@ -123,4 +123,9 @@ test('event and request semantics reject unsupported values',()=>{
 test('date precision and retrospective confirmation are preserved',()=>{
  assert.equal(dateLabel('2015-02'),'Feb 2015');assert.equal(dateLabel('2016-12-21'),'Dec 21, 2016');
  const columbus=data.cases.find(c=>c.id==='columbus-avenue');assert.equal(columbus.events.find(e=>e.type==='implementation').date,'2012-12-11');
+});
+test('corpus metadata reflects validated review date and record counts',()=>{
+ const changed=structuredClone(data);changed.reviewed_on='2025-01-02';changed.sources.push({...changed.sources[0],id:'extra-source'});changed.cases.push({...structuredClone(changed.cases[0]),id:'extra-case'});
+ const meta=corpusMetadata(validate(changed));
+ assert.deepEqual(meta,{reviewDate:'Jan 2, 2025',sourceCount:11,caseCount:5,sourceSummary:'11 public documents behind 5 casefiles.'});
 });
