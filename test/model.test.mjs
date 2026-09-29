@@ -1,7 +1,7 @@
 import {test} from 'node:test';
 import assert from 'node:assert/strict';
 import {readFile} from 'node:fs/promises';
-import {validate,implemented,filterCases,dateLabel,handoff,safeURL} from '../site/model.mjs';
+import {validate,hasReviewedEvent,implemented,filterCases,dateLabel,handoff,safeURL} from '../site/model.mjs';
 const data=validate(JSON.parse(await readFile(new URL('../site/data/cases.json',import.meta.url),'utf8')));
 test('three source-backed end-to-end cases and one explicitly unresolved case',()=>{
  assert.equal(data.cases.length,4); assert.equal(data.cases.filter(implemented).length,3);
@@ -14,6 +14,11 @@ test('three source-backed end-to-end cases and one explicitly unresolved case',(
 test('a proposal and board vote cannot produce a completed outcome',()=>{
  const c=structuredClone(data.cases[0]);c.events=c.events.filter(e=>e.type!=='implementation');assert.equal(implemented(c),false);
  c.events.push({type:'implementation',reviewed:false,source_ids:['dot-2016-completion']});assert.equal(implemented(c),false);
+});
+test('only reviewed events establish evidence-chain stages',()=>{
+ const corpus=structuredClone(data);const c=corpus.cases[0];const agency=c.events.find(e=>e.type==='agency_action');
+ assert.equal(hasReviewedEvent(c,'agency_action'),true);agency.reviewed=false;assert.doesNotThrow(()=>validate(corpus));assert.equal(hasReviewedEvent(c,'agency_action'),false);
+ assert.equal(hasReviewedEvent(c,'implementation'),true);c.events.find(e=>e.type==='implementation').reviewed=false;assert.equal(implemented(c),false);
 });
 test('filtering is case insensitive, combined and explicit about empty results',()=>{
  assert.equal(filterCases(data.cases,'CB3').length,2);assert.equal(filterCases(data.cases,'  amsterdam ','documented').length,1);assert.equal(filterCases(data.cases,'Amsterdam','unknown').length,0);assert.equal(filterCases(data.cases,'','unknown').length,1);assert.equal(filterCases(data.cases,'nonexistent').length,0);
