@@ -1,0 +1,10 @@
+import {cp,mkdir,readFile,rm,writeFile} from 'node:fs/promises';
+import {fileURLToPath} from 'node:url';
+import {validateJournal} from '../site/journal.mjs';
+const root=new URL('../',import.meta.url);
+validateJournal(JSON.parse(await readFile(new URL('site/data/journal.json',root),'utf8')));
+await rm(new URL('dist/',root),{recursive:true,force:true});
+await mkdir(new URL('dist/',root),{recursive:true});
+await cp(new URL('site/',root),new URL('dist/',root),{recursive:true});
+await writeFile(new URL('dist/.nojekyll',root),'');
+console.log('Built static site: '+fileURLToPath(new URL('dist/',root)));

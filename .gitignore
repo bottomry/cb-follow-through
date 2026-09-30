@@ -1,0 +1,8 @@
+.cache/
+.preview/
+node_modules/
+.DS_Store
+
+dist/
+AGENTS.md
+CLAUDE.md
