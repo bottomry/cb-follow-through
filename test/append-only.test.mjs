@@ -7,6 +7,28 @@ import {join} from 'node:path';
 import {fileURLToPath} from 'node:url';
 const checker=fileURLToPath(new URL('../tools/check-append-only.mjs',import.meta.url));
 const seed=JSON.parse(await readFile(new URL('../site/data/journal.json',import.meta.url),'utf8'));
+test('a clean root checkout accepts its initial journal but checks explicit bases',async()=>{
+ const dir=await mkdtemp(join(tmpdir(),'follow-through-root-'));
+ const path=join(dir,'site/data/journal.json');
+ const run=(cmd,args=[],env={})=>spawnSync(cmd,args,{cwd:dir,encoding:'utf8',env:{...process.env,...env}});
+ try {
+  await mkdir(join(dir,'site/data'),{recursive:true});
+  await writeFile(path,JSON.stringify(seed));
+  for(const args of [['init','-q'],['config','user.email','fixture@example.org'],
+   ['config','user.name','Fixture'],['add','site/data/journal.json'],['commit','-qm','Public root']])
+   assert.equal(run('git',args).status,0);
+  assert.equal(run(process.execPath,[checker]).status,0);
+  const eventPath=join(dir,'push-event.json');
+  await writeFile(eventPath,JSON.stringify({before:'a'.repeat(40)}));
+  assert.equal(run(process.execPath,[checker],{
+   GITHUB_EVENT_NAME:'push',GITHUB_EVENT_PATH:eventPath,GITHUB_REF_NAME:'main'
+  }).status,0);
+  assert.notEqual(run(process.execPath,[checker],{JOURNAL_BASE_REF:'missing-ref'}).status,0);
+  const altered=structuredClone(seed);altered.entries[0].payload.scope='Rewritten scope';
+  await writeFile(path,JSON.stringify(altered));
+  assert.notEqual(run(process.execPath,[checker],{JOURNAL_BASE_REF:'HEAD'}).status,0);
+ } finally {await rm(dir,{recursive:true,force:true});}
+});
 test('history gate accepts additions and rejects rewritten prior entries',async()=>{
  const dir=await mkdtemp(join(tmpdir(),'follow-through-journal-'));
  const path=join(dir,'site/data/journal.json');
