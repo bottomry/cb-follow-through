@@ -51,7 +51,7 @@ export function validate(data) {
 }
 export const hasReviewedEvent = (c,type) => c.events.some(e => e.type === type && e.reviewed === true && e.source_ids.length);
 export const implemented = c => hasReviewedEvent(c,'implementation');
-export const timelineEvents = c => [{...c.decision,type:'decision'},...c.events];
+export const timelineEvents = c => [{...c.decision,type:'decision'},...c.events].sort((a,b)=>a.date.localeCompare(b.date));
 export function filterCases(cases, query = '', status = 'all') { const q = query.trim().toLowerCase(); return cases.filter(c => (status === 'all' || implemented(c) === (status === 'documented')) && [c.title,c.board,c.corridor,c.summary,c.agency].join(' ').toLowerCase().includes(q)); }
 export function dateLabel(value) { return new Intl.DateTimeFormat('en-US', {month:'short', ...(value.length > 7 ? {day:'numeric'} : {}), year:'numeric', timeZone:'UTC'}).format(new Date(value.length === 7 ? value+'-01T12:00:00Z' : value+'T12:00:00Z')); }
 export function corpusMetadata(data) {
@@ -63,4 +63,11 @@ export function corpusMetadata(data) {
   sourceSummary:`${sourceCount} public document${sourceCount===1?'':'s'} behind ${caseCount} casefile${caseCount===1?'':'s'}.`
  };
 }
-export function handoff(c, sources, note = '') { const ids = new Set([...c.decision.source_ids,...c.events.flatMap(e => e.source_ids),...c.requests.flatMap(r => r.source_ids)]); return `${c.title} — ${c.board}\n${c.corridor}\nStatus: ${implemented(c) ? 'Implementation documented' : 'Outcome unknown in this corpus'}\n\n${c.summary}\n\n${timelineEvents(c).map(e => `${e.reviewed === true ? '' : 'UNREVIEWED · '}${dateLabel(e.date)} — ${e.title}\n${e.summary}`).join('\n\n')}\n\nLIMITS\n${c.limits.join('\n')}\n\nSOURCES\n${sources.filter(s => ids.has(s.id)).map(s => `${s.title}\n${s.locator}\n${s.url}\n${s.review_method}`).join('\n\n')}\n\nLOCAL DRAFT — UNREVIEWED\n${note || '(No draft)'}\n`; }
+export function handoff(c, sources, note = '') {
+ const ids = new Set([...c.decision.source_ids,...c.events.flatMap(e => e.source_ids),...c.requests.flatMap(r => r.source_ids)]);
+ const citations = sourceIds => sourceIds.map(id=>`[${id}]`).join(' ');
+ const eventRows = timelineEvents(c).map(e => `${e.reviewed === true ? '' : 'UNREVIEWED · '}${dateLabel(e.date)} — ${e.title}\n${e.summary}\n${e.type === 'decision' ? `Vote: ${e.vote}\nVote context: ${e.vote_basis}\n` : ''}Evidence basis: ${e.basis}\nSources: ${citations(e.source_ids)}`).join('\n\n');
+ const requestRows = c.requests.map(r => `${r.state.toUpperCase()} — ${r.text}\n${r.note}\nSources: ${citations(r.source_ids)}`).join('\n\n');
+ const sourceRows = sources.filter(s => ids.has(s.id)).map(s => `[${s.id}] ${s.title}\n${s.locator}\n${s.url}\n${s.review_method}`).join('\n\n');
+ return `${c.title} — ${c.board}\n${c.corridor}\nStatus: ${implemented(c) ? 'Implementation documented' : 'Outcome unknown in this corpus'}\n\n${c.summary}\n\nEVIDENCE TRAIL\n${eventRows}\n\nREQUESTS\n${requestRows}\n\nLIMITS\n${c.limits.join('\n')}\n\nSOURCES\n${sourceRows}\n\nLOCAL DRAFT — UNREVIEWED\n${note || '(No draft)'}\n`;
+}

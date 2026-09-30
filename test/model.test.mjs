@@ -35,6 +35,16 @@ test('handoff retains source URLs, limits and segregated draft notes',()=>{
  const before=JSON.stringify(data);const text=handoff(data.cases[0],data.sources,'Unverified candidate https://example.org/');assert.match(text,/LOCAL DRAFT — UNREVIEWED/);assert.match(text,/https:\/\/www.nyc.gov/);assert.match(text,/LIMITS/);assert.match(text,/Unverified candidate/);assert.equal(JSON.stringify(data),before);
  const direct=structuredClone(data.cases[0]);const event=direct.events.find(e=>e.type==='implementation');event.reviewed=false;const directText=handoff(direct,data.sources);const row=directText.split('\n').find(line=>line.includes(event.title));assert.equal(row,`UNREVIEWED · ${dateLabel(event.date)} — ${event.title}`);assert.match(directText,/Status: Outcome unknown in this corpus/);
 });
+test('handoff preserves chronological evidence, decision context and request unknowns',()=>{
+ const chrystie=data.cases.find(c=>c.id==='chrystie-street');const chrystieText=handoff(chrystie,data.sources);const request=chrystie.events.find(e=>e.id==='ch-request');const decision=chrystie.decision;
+ const decisionSource=data.sources.find(source=>source.id==='chrystie-vote');assert.ok(chrystieText.indexOf(request.title)<chrystieText.indexOf(decision.title));assert.match(chrystieText,new RegExp(`Evidence basis: ${request.basis}`));assert.match(chrystieText,new RegExp(`Vote: ${decision.vote}`));assert.match(chrystieText,new RegExp(`Vote context: ${decision.vote_basis}`));assert.match(chrystieText,/Sources: \[chrystie-vote\]/);assert.ok(chrystieText.includes(`[${decisionSource.id}] ${decisionSource.title}\n${decisionSource.locator}`));
+ for(const [caseId,requestText,sourceId] of [
+  ['amsterdam-avenue','Establish the proposed neighborhood evaluation task force','amsterdam-resolution'],
+  ['columbus-avenue','Evaluate after six months and publish results to CB7 and the community','columbus-evaluation']
+ ]) {
+  const c=data.cases.find(row=>row.id===caseId);const request=c.requests.find(row=>row.text===requestText);const text=handoff(c,data.sources);assert.match(text,new RegExp(`UNKNOWN — ${request.text}\\n${request.note}\\nSources: .*\\[${sourceId}\\]`));
+ }
+});
 test('source URLs reject executable schemes and data references fail closed',()=>{
  for(const value of ['javascript:alert(1)','data:text/html,test','http://example.org','garbage'])assert.equal(safeURL(value),null);
  assert.equal(safeURL('https://www.nyc.gov/'),'https://www.nyc.gov/');
