@@ -11,7 +11,8 @@ test('a clean root checkout accepts its initial journal but checks explicit base
  const dir=await mkdtemp(join(tmpdir(),'follow-through-root-'));
  const path=join(dir,'site/data/journal.json');
  const run=(cmd,args=[],env={})=>spawnSync(cmd,args,{cwd:dir,encoding:'utf8',
-  env:{...process.env,JOURNAL_PUBLISHED_BASE:'',JOURNAL_INITIAL_PUBLISH:'',...env}});
+  env:{...process.env,GITHUB_EVENT_NAME:'',GITHUB_EVENT_PATH:'',GITHUB_REF_NAME:'',
+   JOURNAL_BASE_REF:'',JOURNAL_PUBLISHED_BASE:'',JOURNAL_INITIAL_PUBLISH:'',...env}});
  try {
   await mkdir(join(dir,'site/data'),{recursive:true});
   await writeFile(path,JSON.stringify(seed));
@@ -67,7 +68,8 @@ test('history gate accepts additions and rejects rewritten prior entries',async(
  const dir=await mkdtemp(join(tmpdir(),'follow-through-journal-'));
  const path=join(dir,'site/data/journal.json');
  const run=(cmd,args=[],env={})=>spawnSync(cmd,args,{cwd:dir,encoding:'utf8',
-  env:{...process.env,JOURNAL_PUBLISHED_BASE:'',JOURNAL_INITIAL_PUBLISH:'',...env}});
+  env:{...process.env,GITHUB_EVENT_NAME:'',GITHUB_EVENT_PATH:'',GITHUB_REF_NAME:'',
+   JOURNAL_BASE_REF:'',JOURNAL_PUBLISHED_BASE:'',JOURNAL_INITIAL_PUBLISH:'',...env}});
  try {
   await mkdir(join(dir,'site/data'),{recursive:true});
   await writeFile(path,JSON.stringify(seed));
@@ -117,7 +119,8 @@ test('history gate accepts additions and rejects rewritten prior entries',async(
   const shallow=join(dir,'shallow');
   assert.equal(run('git',['clone','-q','--depth=1','file://'+dir,shallow]).status,0);
   const shallowCheck=spawnSync(process.execPath,[checker],{
-   cwd:shallow,encoding:'utf8',env:process.env
+   cwd:shallow,encoding:'utf8',env:{...process.env,GITHUB_EVENT_NAME:'',GITHUB_EVENT_PATH:'',
+    GITHUB_REF_NAME:'',JOURNAL_BASE_REF:'',JOURNAL_PUBLISHED_BASE:'',JOURNAL_INITIAL_PUBLISH:''}
   });
   assert.notEqual(shallowCheck.status,0);
   assert.match(shallowCheck.stderr,/Cannot verify journal base HEAD\^/);
@@ -127,7 +130,8 @@ test('a first branch push compares with its merge base, not moving main',async()
  const dir=await mkdtemp(join(tmpdir(),'follow-through-branch-'));
  const path=join(dir,'site/data/journal.json');
  const run=(cmd,args=[],env={})=>spawnSync(cmd,args,{cwd:dir,encoding:'utf8',
-  env:{...process.env,JOURNAL_PUBLISHED_BASE:'',JOURNAL_INITIAL_PUBLISH:'',...env}});
+  env:{...process.env,GITHUB_EVENT_NAME:'',GITHUB_EVENT_PATH:'',GITHUB_REF_NAME:'',
+   JOURNAL_BASE_REF:'',JOURNAL_PUBLISHED_BASE:'',JOURNAL_INITIAL_PUBLISH:'',...env}});
  const append=reason=>{
   const data=structuredClone(seed);data.entries.push({seq:data.entries.length+1,recorded_on:'2026-09-30',
    kind:'collection_updated',payload:{reason,changes:{reviewed_on:'2026-09-30'}}});return data;
