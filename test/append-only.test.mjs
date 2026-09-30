@@ -24,6 +24,8 @@ test('a clean root checkout accepts its initial journal but checks explicit base
    GITHUB_EVENT_NAME:'push',GITHUB_EVENT_PATH:eventPath,GITHUB_REF_NAME:'main'
   }).status,0);
   assert.notEqual(run(process.execPath,[checker],{JOURNAL_BASE_REF:'missing-ref'}).status,0);
+  const blob=run('git',['rev-parse','HEAD:site/data/journal.json']).stdout.trim();
+  assert.notEqual(run(process.execPath,[checker],{JOURNAL_BASE_REF:blob}).status,0);
   const altered=structuredClone(seed);altered.entries[0].payload.scope='Rewritten scope';
   await writeFile(path,JSON.stringify(altered));
   assert.notEqual(run(process.execPath,[checker],{JOURNAL_BASE_REF:'HEAD'}).status,0);

@@ -26,7 +26,7 @@ const current=JSON.parse(readFileSync(path,'utf8'));
 const branch=process.env.GITHUB_REF_NAME||git('branch','--show-current').stdout.trim();
 const selected=process.env.JOURNAL_BASE_REF||eventBase();
 const base=!selected||zeroSha.test(selected)?fallbackBase(branch):selected;
-const baseExists=git('rev-parse','--verify',base).status===0;
+const baseExists=git('rev-parse','--verify',base+'^{commit}').status===0;
 const headParents=git('rev-list','--parents','-n','1','HEAD').stdout.trim().split(/\s+/);
 const rootBootstrap=!baseExists && headParents.length===1 && !process.env.JOURNAL_BASE_REF &&
  (base==='HEAD^'||process.env.GITHUB_EVENT_NAME==='push');
