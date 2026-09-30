@@ -1,5 +1,5 @@
 import {validateJournal,projectJournal,caseSteps,escapeHTML,sourceHref,hasReviewedEvent,outcomeDocumented,
- timelineEvents,filterCases,dateLabel,corpusMetadata,handoff} from './journal.mjs';
+ timelineEvents,filterCases,dateLabel,corpusMetadata,handoff,entryDescription} from './journal.mjs';
 const $=selector=>document.querySelector(selector),esc=escapeHTML;
 let journal,data,meta,currentId,replayIndex=0,opener,currentSources=[];
 const dialog=$('#dialog');
@@ -38,17 +38,6 @@ function renderList() {
   '<p class="empty">No matching casefiles. Try another subject or choose all statuses.</p>';
 }
 function readDraft(id) {try{return localStorage.getItem('follow-through:'+id)||'';}catch{return '';}}
-function entryDescription(entry,casefile) {
- const payload=entry.payload;
- const action={
-  case_opened:'Case opened',evidence_added:'Evidence added',evidence_corrected:'Evidence corrected',
-  evidence_retracted:'Evidence retracted',requirement_added:'Requirement recorded',
-  requirement_assessed:'Requirement assessed',requirement_corrected:'Requirement corrected',
-  requirement_retracted:'Requirement retracted',case_retracted:'Case withdrawn',case_updated:'Case description updated'
- }[entry.kind]||entry.kind;
- const requirement=casefile.requirements.find(r=>r.id===payload.requirement_id);
- return action+': '+(payload.title||payload.text||payload.replacement?.title||payload.replacement?.text||requirement?.text||payload.reason||payload.id);
-}
 function renderCase() {
  const base=data.cases.find(c=>c.id===currentId)||data.cases[0];
  currentId=base.id;
@@ -85,7 +74,7 @@ function renderCase() {
   '<p class="empty">No requirements are included at this step.</p>';
  const repairs=c.history.filter(row=>row.kind.endsWith('_corrected')||row.kind.endsWith('_retracted')).map(row=>
   '<article class="request"><span class="badge amber">Audit</span><div><h4>'+esc(row.kind.replaceAll('_',' '))+
-  '</h4><p>'+esc(row.reason)+'</p>'+sourceButtons(row.source_ids)+'</div></article>').join('')||
+  ': '+esc(row.target_label)+' ['+esc(row.target_id)+']</h4><p>'+esc(row.reason)+'</p>'+sourceButtons(row.source_ids)+'</div></article>').join('')||
   '<p class="empty">No corrections or retractions are included at this step.</p>';
  const trail=latest?
   '<p class="lead">'+esc(c.summary)+'</p>':

@@ -14,6 +14,7 @@ export function sourceHref(source) {
 const slug = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
 const evidenceTypes = new Set(['decision','request','action','assessment','outcome']);
 const states = new Set(['documented','unknown']);
+const isRepairKind = kind => kind.endsWith('_corrected')||kind.endsWith('_retracted');
 const isRecord = value => value !== null && typeof value === 'object' && !Array.isArray(value);
 const hasText = value => typeof value === 'string' && value.trim().length > 0;
 const fields = (value,names) => isRecord(value) && names.every(name => hasText(value[name]));
@@ -91,6 +92,7 @@ function fold(journal,through=Infinity) {
    }
    const c=cases.get(entry.case_id);if(!c)throw Error('Journal refers to unopened case.');
    if(c.withdrawn)throw Error('Journal refers to withdrawn case.');
+   let historyTargetId='',historyTargetLabel='';
    if(entry.kind==='evidence_added') {
     if(!validEvidence(payload,sources) || evidenceIds.get(entry.case_id).has(payload.id))throw Error('Invalid evidence entry.');
     evidenceIds.get(entry.case_id).add(payload.id);
@@ -104,6 +106,7 @@ function fold(journal,through=Infinity) {
        !validEvidence(payload.replacement,sources) || payload.replacement.id!==payload.target_id)throw Error('Invalid evidence correction.');
     const old=c.decision?.id===payload.target_id?c.decision:c.events.find(e=>e.id===payload.target_id);
     if(!old || (old.type==='decision')!==(payload.replacement.type==='decision'))throw Error('Invalid evidence reclassification.');
+    historyTargetId=old.id;historyTargetLabel=old.title;
     const replacement={...structuredClone(payload.replacement),ledger_seq:entry.seq,
      correction_reason:payload.reason,correction_source_ids:[...payload.source_ids]};
     if(c.decision?.id===payload.target_id)c.decision=replacement;
@@ -112,6 +115,7 @@ function fold(journal,through=Infinity) {
     if(!fields(payload,['target_id','reason']) || !sourceRefs(payload.source_ids,sources))throw Error('Invalid evidence retraction.');
     const target=c.decision?.id===payload.target_id?c.decision:c.events.find(e=>e.id===payload.target_id);
     if(!target || target.type==='decision')throw Error('Invalid evidence retraction target.');
+    historyTargetId=target.id;historyTargetLabel=target.title;
     c.events.splice(c.events.findIndex(e=>e.id===payload.target_id),1);
    } else if(entry.kind==='requirement_added') {
     if(!hasSlug(payload?.id) || requirementIds.get(entry.case_id).has(payload.id) ||
@@ -133,6 +137,7 @@ function fold(journal,through=Infinity) {
      throw Error('Invalid requirement correction.');
     const index=c.requirements.findIndex(r=>r.id===payload.target_id);
     if(index<0)throw Error('Requirement correction target missing.');
+    historyTargetId=c.requirements[index].id;historyTargetLabel=c.requirements[index].text;
     c.requirements[index]={...structuredClone(payload.replacement),state:'unknown',
      note:'No reviewed fulfillment assessment recorded.',assessment_source_ids:[],ledger_seq:entry.seq,
      correction_reason:payload.reason,correction_source_ids:[...payload.source_ids]};
@@ -140,9 +145,11 @@ function fold(journal,through=Infinity) {
     if(!fields(payload,['target_id','reason']) || !sourceRefs(payload.source_ids,sources))throw Error('Invalid requirement retraction.');
     const index=c.requirements.findIndex(r=>r.id===payload.target_id);
     if(index<0)throw Error('Requirement retraction target missing.');
+    historyTargetId=c.requirements[index].id;historyTargetLabel=c.requirements[index].text;
     c.requirements.splice(index,1);
    } else if(entry.kind==='case_retracted') {
     if(!fields(payload,['reason']) || !sourceRefs(payload.source_ids,sources))throw Error('Invalid case retraction.');
+    historyTargetId=c.id;historyTargetLabel=c.title;
     c.withdrawn=true;c.withdrawal_reason=payload.reason;c.withdrawal_source_ids=[...payload.source_ids];
     c.withdrawal_ledger_seq=entry.seq;
    } else if(entry.kind==='case_updated') {
@@ -152,7 +159,8 @@ function fold(journal,through=Infinity) {
     Object.assign(c,structuredClone(payload.changes));
    } else throw Error('Unknown journal entry kind.');
    c.history.push({seq:entry.seq,recorded_on:entry.recorded_on,kind:entry.kind,
-     reason:payload.reason||'',source_ids:[...(payload.source_ids||[])],target_id:payload.target_id||'',
+     reason:payload.reason||'',source_ids:[...(payload.source_ids||[])],
+     target_id:historyTargetId||payload.target_id||'',target_label:historyTargetLabel||'',
      title:payload.title||payload.text||payload.replacement?.title||payload.replacement?.text||payload.requirement_id||''});
   }
  }
@@ -171,7 +179,7 @@ function caseSourceRefs(c) {
  const evidence=[...(c.decision?[c.decision]:[]),...c.events];
  return new Set([...evidence.flatMap(e=>[...e.source_ids,...(e.correction_source_ids||[])]),
   ...c.requirements.flatMap(r=>[...r.source_ids,...r.assessment_source_ids,...(r.correction_source_ids||[])]),
-  ...c.history.filter(row=>row.kind.endsWith('_corrected')||row.kind.endsWith('_retracted')).flatMap(row=>row.source_ids)]);
+  ...c.history.filter(row=>isRepairKind(row.kind)).flatMap(row=>row.source_ids)]);
 }
 export function caseSteps(journal,id) {
  const c=projectJournal(journal).cases.find(row=>row.id===id);
@@ -187,6 +195,20 @@ export function caseSteps(journal,id) {
   }
  }
  return steps;
+}
+export function entryDescription(entry,casefile) {
+ const action={case_opened:'Case opened',evidence_added:'Evidence added',evidence_corrected:'Evidence corrected',
+  evidence_retracted:'Evidence retracted',requirement_added:'Requirement recorded',
+  requirement_assessed:'Requirement assessed',requirement_corrected:'Requirement corrected',
+  requirement_retracted:'Requirement retracted',case_retracted:'Case withdrawn',case_updated:'Case description updated'}[entry.kind]||entry.kind;
+ const audit=casefile.history.find(row=>row.seq===entry.seq);
+ if(isRepairKind(entry.kind)) {
+  const id=audit?.target_id||entry.payload.target_id||casefile.id;
+  const label=audit?.target_label||entry.payload.replacement?.title||entry.payload.replacement?.text||id;
+  return action+': '+label+' ['+id+']';
+ }
+ const requirement=casefile.requirements.find(r=>r.id===entry.payload.requirement_id);
+ return action+': '+(entry.payload.title||entry.payload.text||requirement?.text||entry.payload.reason||entry.payload.id);
 }
 export const timelineEvents=c=>[...(c.decision?[c.decision]:[]),...c.events].sort((a,b)=>a.date.localeCompare(b.date)||a.ledger_seq-b.ledger_seq);
 export const hasReviewedEvent=(c,type)=>!c.withdrawn&&c.events.some(e=>e.type===type&&e.reviewed===true&&e.source_ids.length);
@@ -216,8 +238,8 @@ export function handoff(c,sources,note='',sequence=null,latest=sequence===null) 
  const requirements=c.requirements.map(r=>r.state.toUpperCase()+' — '+r.text+'\n'+r.note+
   '\nSources: '+cite([...new Set([...r.source_ids,...r.assessment_source_ids])])+
   (r.correction_reason?'\nCorrection: '+r.correction_reason+'\nCorrection sources: '+cite(r.correction_source_ids):'')).join('\n\n');
- const repairs=c.history.filter(row=>row.kind.endsWith('_corrected')||row.kind.endsWith('_retracted')).map(row=>
-  row.kind.replaceAll('_',' ').toUpperCase()+' — '+(row.target_id||c.id)+' [ledger '+row.seq+']\n'+row.reason+
+ const repairs=c.history.filter(row=>isRepairKind(row.kind)).map(row=>
+  row.kind.replaceAll('_',' ').toUpperCase()+' — '+row.target_label+' ['+(row.target_id||c.id)+'] [ledger '+row.seq+']\n'+row.reason+
   '\nSources: '+cite(row.source_ids)).join('\n\n');
  const limits=latest?c.limits.join('\n'):'Latest casefile limits are omitted from this partial replay.';
  const sourceRows=sources.filter(s=>ids.has(s.id)).map(s=>'['+s.id+'] '+s.title+'\n'+s.locator+'\n'+s.url+'\n'+s.review_method).join('\n\n');

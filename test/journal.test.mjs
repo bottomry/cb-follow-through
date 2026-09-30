@@ -2,7 +2,7 @@ import {test} from 'node:test';
 import assert from 'node:assert/strict';
 import {readFile} from 'node:fs/promises';
 import {validateJournal,projectJournal,caseSteps,timelineEvents,outcomeDocumented,hasReviewedEvent,
- filterCases,corpusMetadata,handoff,dateLabel,sourceHref,escapeHTML} from '../site/journal.mjs';
+ filterCases,corpusMetadata,handoff,dateLabel,sourceHref,escapeHTML,entryDescription} from '../site/journal.mjs';
 const journal=validateJournal(JSON.parse(await readFile(new URL('../site/data/journal.json',import.meta.url),'utf8')));
 const latest=projectJournal(journal);
 const copy=()=>structuredClone(journal);
@@ -92,7 +92,11 @@ test('evidence repair reclassifies and retracts outcomes without rewriting histo
  assert.equal(outcomeDocumented(current),false);
  assert.equal(current.events.some(event=>event.id===outcome.id),false);
  const brief=handoff(current,projectJournal(retracted).sources);
+ const retraction=retracted.entries[retractedAt-1];
+ assert.equal(entryDescription(retraction,current),'Evidence retracted: '+outcome.title+' ['+outcome.id+']');
+ assert.equal(current.history.find(row=>row.seq===retractedAt).target_label,outcome.title);
  assert.match(brief,/EVIDENCE RETRACTED/);
+ assert.equal(brief.includes(outcome.title+' ['+outcome.id+']'),true);
  assert.match(brief,/Later review found no support for this outcome/);
  assert.match(brief,new RegExp('Sources: \\['+outcome.source_ids[0]+'\\]'));
 });
