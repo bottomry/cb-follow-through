@@ -26,6 +26,6 @@ To add another kind of public case, append a cited source_added entry, a case_op
 
 ## Static deployment
 
-npm run build validates the journal and copies only site/ into dist/. All asset paths are relative and work under a GitHub Pages repository prefix. The repository is private; public deployment requires a separate approval. The Publish Pages workflow is manual and refuses to run on a private repository or a branch other than main. Ordinary pushes run checks only.
+npm run build validates the journal and copies only site/ into dist/. All asset paths are relative and work under a GitHub Pages repository prefix. The public application is at https://bottomry.github.io/cb-follow-through/. The Publish Pages workflow deploys from main on manual dispatch; ordinary pushes run checks only.
 
 Application code: MIT. See [NOTICE](NOTICE.md) for source attribution. Original public records remain the authority; application licensing does not claim ownership of those records.
