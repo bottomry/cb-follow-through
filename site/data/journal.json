@@ -1,0 +1,764 @@
+{
+  "schema_version": 2,
+  "entries": [
+    {
+      "seq": 1,
+      "recorded_on": "2026-09-30",
+      "kind": "collection_opened",
+      "payload": {
+        "scope": "Four deliberately selected Manhattan street-safety casefiles across two boards and one agency. A demonstration corpus, not a representative performance sample.",
+        "collection_label": "NYC street safety seed",
+        "reviewed_on": "2026-09-29"
+      }
+    },
+    {
+      "seq": 2,
+      "recorded_on": "2026-09-30",
+      "kind": "source_added",
+      "payload": {
+        "id": "amsterdam-resolution",
+        "title": "CB7 resolution · February 2, 2016",
+        "publisher": "Manhattan Community Board 7",
+        "url": "https://www.nyc.gov/assets/manhattancb7/downloads/pdf/resolutions/2016/resolutions_02_16.pdf",
+        "locator": "PDF pages 1–2 · Amsterdam Avenue resolution; vote on page 1; adopted clauses on page 2",
+        "excerpt": "Full Board Vote: 28 In Favor 13 Against 2 Abstentions 0 Present",
+        "checked_on": "2026-09-29",
+        "review_method": "Official document text read through the web research service; no local original-file checksum is asserted.",
+        "page": 1
+      }
+    },
+    {
+      "seq": 3,
+      "recorded_on": "2026-09-30",
+      "kind": "source_added",
+      "payload": {
+        "id": "amsterdam-design",
+        "title": "Amsterdam Avenue design · February 2, 2016",
+        "publisher": "NYC Department of Transportation",
+        "url": "https://www.nyc.gov/html/dot/downloads/pdf/amsterdam-avenue-cb7-feb2016.pdf",
+        "locator": "PDF pages 1 and 26 · presentation date and Phase 1 next steps",
+        "excerpt": "Implementation begins Spring 2016",
+        "checked_on": "2026-09-29",
+        "review_method": "Official document text read through the web research service; no local original-file checksum is asserted.",
+        "page": 26
+      }
+    },
+    {
+      "seq": 4,
+      "recorded_on": "2026-09-30",
+      "kind": "source_added",
+      "payload": {
+        "id": "dot-2016-completion",
+        "title": "DOT completion announcement · December 21, 2016",
+        "publisher": "NYC Department of Transportation",
+        "url": "https://www.nyc.gov/html/dot/html/pr2016/pr16-106.shtml",
+        "locator": "Opening subheading for Chrystie; paragraph beginning “Among the other” for Amsterdam",
+        "excerpt": "Fully-protected Chrystie Street bike lane is now complete",
+        "checked_on": "2026-09-29",
+        "review_method": "Official document text read through the web research service; no local original-file checksum is asserted.",
+        "access_note": "The announcement also lists Amsterdam Avenue, West 72nd to West 110th Streets, among projects completed in 2016."
+      }
+    },
+    {
+      "seq": 5,
+      "recorded_on": "2026-09-30",
+      "kind": "source_added",
+      "payload": {
+        "id": "columbus-vote",
+        "title": "CB7 full-board minutes · June 1, 2010",
+        "publisher": "Manhattan Community Board 7",
+        "url": "https://www.nyc.gov/assets/manhattancb7/downloads/pdf/minutes/2010/minutes_06_10.pdf",
+        "locator": "PDF pages 5 and 9 · accepted six-month evaluation amendment, rejected board-control amendment and final Columbus Avenue vote",
+        "excerpt": "VOTE: 23-19-1-0.",
+        "checked_on": "2026-09-29",
+        "review_method": "Official document text read through the web research service; no local original-file checksum is asserted.",
+        "page": 9
+      }
+    },
+    {
+      "seq": 6,
+      "recorded_on": "2026-09-30",
+      "kind": "source_added",
+      "payload": {
+        "id": "columbus-update",
+        "title": "District Service Cabinet · September 29, 2010",
+        "publisher": "Manhattan Community Board 7",
+        "url": "https://www.nyc.gov/assets/manhattancb7/downloads/pdf/minutes/2010/minutes_09_10.pdf",
+        "locator": "PDF pages 8–9 · cabinet date and DOT–Columbus Avenue update",
+        "excerpt": "The bike lane is in use from 96th to 86th Street.",
+        "checked_on": "2026-09-29",
+        "review_method": "Official document text read through the web research service; no local original-file checksum is asserted.",
+        "page": 9
+      }
+    },
+    {
+      "seq": 7,
+      "recorded_on": "2026-09-30",
+      "kind": "source_added",
+      "payload": {
+        "id": "columbus-evaluation",
+        "title": "Transportation Committee · October 11, 2011",
+        "publisher": "Manhattan Community Board 7",
+        "url": "https://www.nyc.gov/assets/manhattancb7/downloads/pdf/minutes/2011/minutes_10_11.pdf",
+        "locator": "PDF page 16 · DOT presentation of Columbus Avenue Street Redesign data",
+        "excerpt": "Implementation began in August 2010.",
+        "checked_on": "2026-09-29",
+        "review_method": "Official document text read through the web research service; no local original-file checksum is asserted.",
+        "page": 16
+      }
+    },
+    {
+      "seq": 8,
+      "recorded_on": "2026-09-30",
+      "kind": "source_added",
+      "payload": {
+        "id": "columbus-dot",
+        "title": "Columbus Avenue mobility presentation · December 11, 2012",
+        "publisher": "NYC Department of Transportation",
+        "url": "https://www.nyc.gov/html/dot/downloads/pdf/2012-12-columbus-ave-extension.pdf",
+        "locator": "PDF pages 1–2 · date and Background; original 2010 segment, not the proposed extension",
+        "excerpt": "2010: Protected bicycle path installed on Columbus Avenue",
+        "checked_on": "2026-09-29",
+        "review_method": "Official document text read through the web research service; no local original-file checksum is asserted.",
+        "page": 2
+      }
+    },
+    {
+      "seq": 9,
+      "recorded_on": "2026-09-30",
+      "kind": "source_added",
+      "payload": {
+        "id": "chrystie-design",
+        "title": "Chrystie Street design · March 8, 2016",
+        "publisher": "NYC Department of Transportation",
+        "url": "https://www.nyc.gov/html/dot/downloads/pdf/chrystie-st-bike-lane-mar2016.pdf",
+        "locator": "PDF pages 1, 6 and 11 · date, request for study and protected-lane design",
+        "excerpt": "requested DOT study of Chrystie St",
+        "checked_on": "2026-09-29",
+        "review_method": "Official document text read through the web research service; no local original-file checksum is asserted.",
+        "page": 6
+      }
+    },
+    {
+      "seq": 10,
+      "recorded_on": "2026-09-30",
+      "kind": "source_added",
+      "payload": {
+        "id": "chrystie-vote",
+        "title": "CB3 full-board minutes · May 24, 2016",
+        "publisher": "Manhattan Community Board 3",
+        "url": "https://www.nyc.gov/assets/manhattancb3/downloads/minutes/minutes2016-05.pdf",
+        "locator": "PDF pages 4–5 · Transportation item 3; page 6 · omnibus vote excluding only item 6",
+        "excerpt": "MOTION PASSED (excluding Transportation item 6)",
+        "checked_on": "2026-09-29",
+        "review_method": "Official document text read through the web research service; no local original-file checksum is asserted.",
+        "page": 5
+      }
+    },
+    {
+      "seq": 11,
+      "recorded_on": "2026-09-30",
+      "kind": "source_added",
+      "payload": {
+        "id": "stmarks-vote",
+        "title": "CB3 full-board minutes · May 26, 2026",
+        "publisher": "Manhattan Community Board 3",
+        "url": "https://www.nyc.gov/assets/manhattancb3/downloads/minutes/2026/minutes2026-05.pdf",
+        "locator": "Transportation item 2; CityScroll retained source-text lines 788–823 and vote line 886",
+        "excerpt": "34 YES 1 NO 0 ABS 0 PNV MOTION PASSED (Transportation item 2)",
+        "checked_on": "2026-09-29",
+        "review_method": "Transcribed from CityScroll’s public resolution pilot, reviewed there on September 7, 2026. Original PDF could not be re-fetched by the research service on September 29.",
+        "access_note": "Source text is inherited evidence, not a new direct document review. No later outcome is established.",
+        "upstream": "https://github.com/cityscroll/cityscroll-app/blob/22c25404364a6135e240ef158ca3bd80c9efd9b0/site/data/community_board_resolution_pilot.json"
+      }
+    },
+    {
+      "seq": 12,
+      "recorded_on": "2026-09-30",
+      "kind": "case_opened",
+      "case_id": "amsterdam-avenue",
+      "payload": {
+        "id": "amsterdam-avenue",
+        "number": "01",
+        "title": "Amsterdam Avenue",
+        "subtitle": "A protected route, from a board vote to a completed corridor.",
+        "decision_maker": "Manhattan CB7",
+        "implementer": "NYC DOT",
+        "subject": "West 72nd → West 110th Street",
+        "place": "Manhattan",
+        "period": "2016",
+        "domain": "Street safety",
+        "summary": "CB7 supported a complete-street design. DOT later named the same stretch of Amsterdam Avenue among its completed 2016 projects.",
+        "match": "Reviewed corridor match: Amsterdam Avenue, West 72nd–West 110th, protected bicycle lane, NYC DOT. The board supported an agency proposal already in development; the records do not prove the vote caused construction.",
+        "limits": [
+          "The documented result is installation, not proof that every requested condition was met.",
+          "No independent field inspection or current-condition survey is included."
+        ],
+        "next_action": "Find the task-force records or later corridor evaluation before marking the evaluation request fulfilled."
+      }
+    },
+    {
+      "seq": 13,
+      "recorded_on": "2026-09-30",
+      "kind": "evidence_added",
+      "case_id": "amsterdam-avenue",
+      "payload": {
+        "id": "am-vote",
+        "date": "2016-02-02",
+        "date_precision": "day",
+        "title": "The full board supports the project",
+        "summary": "CB7 adopted support for the redesign, while also requesting outreach and continuing evaluation.",
+        "source_ids": [
+          "amsterdam-resolution"
+        ],
+        "reviewed": true,
+        "basis": "Direct published record",
+        "type": "decision",
+        "result": "28 for · 13 against · 2 abstentions",
+        "result_basis": "Full-board vote on the named resolution. The separate committee tally is not substituted."
+      }
+    },
+    {
+      "seq": 14,
+      "recorded_on": "2026-09-30",
+      "kind": "evidence_added",
+      "case_id": "amsterdam-avenue",
+      "payload": {
+        "id": "am-design",
+        "date": "2016-02-02",
+        "date_precision": "day",
+        "type": "action",
+        "title": "DOT presents the design",
+        "summary": "DOT presented a protected northbound lane and scheduled Phase 1 from West 72nd to West 110th for spring implementation. This was a plan, not evidence of completion.",
+        "source_ids": [
+          "amsterdam-design"
+        ],
+        "reviewed": true,
+        "basis": "Direct published record"
+      }
+    },
+    {
+      "seq": 15,
+      "recorded_on": "2026-09-30",
+      "kind": "evidence_added",
+      "case_id": "amsterdam-avenue",
+      "payload": {
+        "id": "am-complete",
+        "date": "2016-12-21",
+        "date_precision": "day",
+        "type": "outcome",
+        "title": "DOT reports the corridor completed",
+        "summary": "A dated DOT announcement lists Amsterdam Avenue from West 72nd to West 110th among projects completed in 2016. The announcement date is not the construction completion date.",
+        "source_ids": [
+          "dot-2016-completion"
+        ],
+        "reviewed": true,
+        "basis": "Direct published record"
+      }
+    },
+    {
+      "seq": 16,
+      "recorded_on": "2026-09-30",
+      "kind": "requirement_added",
+      "case_id": "amsterdam-avenue",
+      "payload": {
+        "id": "amsterdam-avenue-requirement-1",
+        "text": "Build the protected lane on the named corridor",
+        "source_ids": [
+          "amsterdam-resolution",
+          "dot-2016-completion"
+        ]
+      }
+    },
+    {
+      "seq": 17,
+      "recorded_on": "2026-09-30",
+      "kind": "requirement_assessed",
+      "case_id": "amsterdam-avenue",
+      "payload": {
+        "requirement_id": "amsterdam-avenue-requirement-1",
+        "state": "documented",
+        "note": "Board and agency records identify the same street and endpoints.",
+        "source_ids": [
+          "amsterdam-resolution",
+          "dot-2016-completion"
+        ],
+        "reviewed": true
+      }
+    },
+    {
+      "seq": 18,
+      "recorded_on": "2026-09-30",
+      "kind": "requirement_added",
+      "case_id": "amsterdam-avenue",
+      "payload": {
+        "id": "amsterdam-avenue-requirement-2",
+        "text": "Establish the proposed neighborhood evaluation task force",
+        "source_ids": [
+          "amsterdam-resolution"
+        ]
+      }
+    },
+    {
+      "seq": 19,
+      "recorded_on": "2026-09-30",
+      "kind": "requirement_assessed",
+      "case_id": "amsterdam-avenue",
+      "payload": {
+        "requirement_id": "amsterdam-avenue-requirement-2",
+        "state": "unknown",
+        "note": "The resolution requests it; the selected completion record does not establish that it formed.",
+        "source_ids": [
+          "amsterdam-resolution"
+        ],
+        "reviewed": true
+      }
+    },
+    {
+      "seq": 20,
+      "recorded_on": "2026-09-30",
+      "kind": "case_opened",
+      "case_id": "chrystie-street",
+      "payload": {
+        "id": "chrystie-street",
+        "number": "02",
+        "title": "Chrystie Street",
+        "subtitle": "A community request, a revised design, a finished connection.",
+        "decision_maker": "Manhattan CB3",
+        "implementer": "NYC DOT",
+        "subject": "Houston → Canal Street",
+        "place": "Manhattan",
+        "period": "2015–2016",
+        "domain": "Street safety",
+        "summary": "The record connects a request for safety improvements to DOT’s design, a full-board endorsement and a later completion announcement.",
+        "match": "Reviewed project match: Chrystie Street protected bicycle lane, Houston–Canal corridor and NYC DOT. The agency design and board record identify the same intervention; the completion release names the facility.",
+        "limits": [
+          "The original February 2015 resolution is represented only through the May 2016 retrospective account.",
+          "Construction completion is documented; causal impact and fulfillment of every design detail are not evaluated."
+        ],
+        "next_action": "Pair the completed design with a later corridor safety evaluation if the next question is whether it improved safety."
+      }
+    },
+    {
+      "seq": 21,
+      "recorded_on": "2026-09-30",
+      "kind": "evidence_added",
+      "case_id": "chrystie-street",
+      "payload": {
+        "id": "ch-request",
+        "date": "2015-02",
+        "date_precision": "month",
+        "type": "request",
+        "title": "The board requests safety improvements",
+        "summary": "The May 2016 minutes recount a February 2015 board resolution seeking safety improvements. This is a retrospective account; the original February resolution was not separately reviewed.",
+        "source_ids": [
+          "chrystie-vote"
+        ],
+        "reviewed": true,
+        "basis": "Earlier event reported in later board minutes"
+      }
+    },
+    {
+      "seq": 22,
+      "recorded_on": "2026-09-30",
+      "kind": "evidence_added",
+      "case_id": "chrystie-street",
+      "payload": {
+        "id": "ch-design",
+        "date": "2016-03-08",
+        "date_precision": "day",
+        "type": "action",
+        "title": "DOT brings a two-way protected-lane design",
+        "summary": "DOT’s presentation identifies the board’s request for a study and proposes separation from traffic.",
+        "source_ids": [
+          "chrystie-design"
+        ],
+        "reviewed": true,
+        "basis": "Direct published record"
+      }
+    },
+    {
+      "seq": 23,
+      "recorded_on": "2026-09-30",
+      "kind": "evidence_added",
+      "case_id": "chrystie-street",
+      "payload": {
+        "id": "ch-workshop",
+        "date": "2016-04-13",
+        "date_precision": "day",
+        "type": "action",
+        "title": "Stakeholders review the design",
+        "summary": "The May minutes report an April 13 DOT workshop and say local input was incorporated. This is the board’s account of the workshop.",
+        "source_ids": [
+          "chrystie-vote"
+        ],
+        "reviewed": true,
+        "basis": "Workshop reported in later board minutes"
+      }
+    },
+    {
+      "seq": 24,
+      "recorded_on": "2026-09-30",
+      "kind": "evidence_added",
+      "case_id": "chrystie-street",
+      "payload": {
+        "id": "ch-vote",
+        "date": "2016-05-24",
+        "date_precision": "day",
+        "title": "The full board supports the final plan",
+        "summary": "CB3 supports DOT’s protected-lane plan following the reported workshop. The adopted Transportation vote includes this item.",
+        "source_ids": [
+          "chrystie-vote"
+        ],
+        "reviewed": true,
+        "basis": "Direct published record",
+        "type": "decision",
+        "result": "40 for · 0 against · 0 abstentions",
+        "result_basis": "Transportation item 3 is covered by the omnibus vote excluding item 6. The separate item 6 tally is not used."
+      }
+    },
+    {
+      "seq": 25,
+      "recorded_on": "2026-09-30",
+      "kind": "evidence_added",
+      "case_id": "chrystie-street",
+      "payload": {
+        "id": "ch-complete",
+        "date": "2016-12-21",
+        "date_precision": "day",
+        "type": "outcome",
+        "title": "DOT announces the lane is complete",
+        "summary": "DOT’s announcement confirms completion of the Chrystie protected lane. It does not establish a measured safety effect caused by the board’s resolution.",
+        "source_ids": [
+          "dot-2016-completion"
+        ],
+        "reviewed": true,
+        "basis": "Direct published record"
+      }
+    },
+    {
+      "seq": 26,
+      "recorded_on": "2026-09-30",
+      "kind": "requirement_added",
+      "case_id": "chrystie-street",
+      "payload": {
+        "id": "chrystie-street-requirement-1",
+        "text": "Install the two-way protected lane",
+        "source_ids": [
+          "chrystie-vote",
+          "dot-2016-completion"
+        ]
+      }
+    },
+    {
+      "seq": 27,
+      "recorded_on": "2026-09-30",
+      "kind": "requirement_assessed",
+      "case_id": "chrystie-street",
+      "payload": {
+        "requirement_id": "chrystie-street-requirement-1",
+        "state": "documented",
+        "note": "The named facility is supported in the minutes and confirmed by DOT.",
+        "source_ids": [
+          "chrystie-vote",
+          "dot-2016-completion"
+        ],
+        "reviewed": true
+      }
+    },
+    {
+      "seq": 28,
+      "recorded_on": "2026-09-30",
+      "kind": "requirement_added",
+      "case_id": "chrystie-street",
+      "payload": {
+        "id": "chrystie-street-requirement-2",
+        "text": "Seek local input before the final design",
+        "source_ids": [
+          "chrystie-vote"
+        ]
+      }
+    },
+    {
+      "seq": 29,
+      "recorded_on": "2026-09-30",
+      "kind": "requirement_assessed",
+      "case_id": "chrystie-street",
+      "payload": {
+        "requirement_id": "chrystie-street-requirement-2",
+        "state": "documented",
+        "note": "The board’s own account records the April workshop and incorporation of input; not an independent workshop audit.",
+        "source_ids": [
+          "chrystie-vote"
+        ],
+        "reviewed": true
+      }
+    },
+    {
+      "seq": 30,
+      "recorded_on": "2026-09-30",
+      "kind": "case_opened",
+      "case_id": "columbus-avenue",
+      "payload": {
+        "id": "columbus-avenue",
+        "number": "03",
+        "title": "Columbus Avenue",
+        "subtitle": "The follow-up comes back to the board.",
+        "decision_maker": "Manhattan CB7",
+        "implementer": "NYC DOT",
+        "subject": "West 96th → West 77th Street",
+        "place": "Manhattan",
+        "period": "2010–2012",
+        "domain": "Street safety",
+        "summary": "A full-board vote is followed by an installation update, a return presentation and DOT’s retrospective confirmation of the original segment.",
+        "match": "Reviewed exact-segment match: Columbus Avenue, West 96th–West 77th. The 2012 slides distinguish the already installed 2010 segment from proposed extensions, preventing a later phase from being mistaken for the original outcome.",
+        "limits": [
+          "2012 is the date of confirmation in the selected DOT document, not the year construction finished.",
+          "The accepted six-month evaluation and publication condition is distinct from the rejected amendment that would have required CB7 participation in decisions to revisit, end, expand, modify or make the lane permanent.",
+          "The October 2011 return presentation does not by itself establish timely compliance with the accepted six-month condition or publication to the community."
+        ],
+        "next_action": "Locate a dated six-month evaluation and evidence that its results were published to CB7 and the community; the October 2011 presentation alone does not close that condition."
+      }
+    },
+    {
+      "seq": 31,
+      "recorded_on": "2026-09-30",
+      "kind": "evidence_added",
+      "case_id": "columbus-avenue",
+      "payload": {
+        "id": "co-vote",
+        "date": "2010-06-01",
+        "date_precision": "day",
+        "title": "The full board approves installation",
+        "summary": "CB7 adopts the protected-lane proposal between West 96th and West 77th with a friendly amendment requiring evaluation after six months and publication of results to CB7 and the community. A later amendment seeking CB7 control over whether to revisit, end, expand, modify or make the lane permanent failed.",
+        "source_ids": [
+          "columbus-vote"
+        ],
+        "reviewed": true,
+        "basis": "Direct published record",
+        "type": "decision",
+        "result": "23 for · 19 against · 1 abstention",
+        "result_basis": "Final adopted motion on PDF page 9. The accepted friendly amendment requiring a six-month evaluation and publication of results is included; the later failed amendment seeking CB7 control over future changes is excluded."
+      }
+    },
+    {
+      "seq": 32,
+      "recorded_on": "2026-09-30",
+      "kind": "evidence_added",
+      "case_id": "columbus-avenue",
+      "payload": {
+        "id": "co-update",
+        "date": "2010-09-29",
+        "date_precision": "day",
+        "type": "action",
+        "title": "An installation update reaches the cabinet",
+        "summary": "The cabinet minutes record that the northern section is in use and the remainder is expected after resurfacing. A forecast is not counted as proof of full completion.",
+        "source_ids": [
+          "columbus-update"
+        ],
+        "reviewed": true,
+        "basis": "Direct published record"
+      }
+    },
+    {
+      "seq": 33,
+      "recorded_on": "2026-09-30",
+      "kind": "evidence_added",
+      "case_id": "columbus-avenue",
+      "payload": {
+        "id": "co-eval",
+        "date": "2011-10-11",
+        "date_precision": "day",
+        "type": "assessment",
+        "title": "DOT returns with a post-installation review",
+        "summary": "Committee minutes record DOT presenting after-data and discussing installed features and ongoing adjustments. This records follow-up; it is not a causal evaluation by this application.",
+        "source_ids": [
+          "columbus-evaluation"
+        ],
+        "reviewed": true,
+        "basis": "Direct published record"
+      }
+    },
+    {
+      "seq": 34,
+      "recorded_on": "2026-09-30",
+      "kind": "evidence_added",
+      "case_id": "columbus-avenue",
+      "payload": {
+        "id": "co-complete",
+        "date": "2012-12-11",
+        "date_precision": "day",
+        "type": "outcome",
+        "title": "DOT confirms the original segment was installed",
+        "summary": "The presentation’s background explicitly identifies the West 96th–West 77th protected path as installed in 2010. Its later extension proposal is a different scope.",
+        "source_ids": [
+          "columbus-dot"
+        ],
+        "reviewed": true,
+        "basis": "Direct published record"
+      }
+    },
+    {
+      "seq": 35,
+      "recorded_on": "2026-09-30",
+      "kind": "requirement_added",
+      "case_id": "columbus-avenue",
+      "payload": {
+        "id": "columbus-avenue-requirement-1",
+        "text": "Install the protected path between 96th and 77th",
+        "source_ids": [
+          "columbus-vote",
+          "columbus-dot"
+        ]
+      }
+    },
+    {
+      "seq": 36,
+      "recorded_on": "2026-09-30",
+      "kind": "requirement_assessed",
+      "case_id": "columbus-avenue",
+      "payload": {
+        "requirement_id": "columbus-avenue-requirement-1",
+        "state": "documented",
+        "note": "DOT retrospectively names the exact original segment and installation year.",
+        "source_ids": [
+          "columbus-vote",
+          "columbus-dot"
+        ],
+        "reviewed": true
+      }
+    },
+    {
+      "seq": 37,
+      "recorded_on": "2026-09-30",
+      "kind": "requirement_added",
+      "case_id": "columbus-avenue",
+      "payload": {
+        "id": "columbus-avenue-requirement-2",
+        "text": "Evaluate after six months and publish results to CB7 and the community",
+        "source_ids": [
+          "columbus-vote",
+          "columbus-evaluation"
+        ]
+      }
+    },
+    {
+      "seq": 38,
+      "recorded_on": "2026-09-30",
+      "kind": "requirement_assessed",
+      "case_id": "columbus-avenue",
+      "payload": {
+        "requirement_id": "columbus-avenue-requirement-2",
+        "state": "unknown",
+        "note": "A later return presentation is recorded, but the selected evidence does not establish a six-month evaluation or publication of results to both CB7 and the community.",
+        "source_ids": [
+          "columbus-vote",
+          "columbus-evaluation"
+        ],
+        "reviewed": true
+      }
+    },
+    {
+      "seq": 39,
+      "recorded_on": "2026-09-30",
+      "kind": "case_opened",
+      "case_id": "st-marks-place",
+      "payload": {
+        "id": "st-marks-place",
+        "number": "04",
+        "title": "St. Marks Place",
+        "subtitle": "A decision is documented. The later outcome remains open.",
+        "decision_maker": "Manhattan CB3",
+        "implementer": "NYC DOT",
+        "subject": "Third Avenue → Avenue A",
+        "place": "Manhattan",
+        "period": "2026",
+        "domain": "Street safety",
+        "summary": "A reviewed public seed records CB3 supporting DOT’s standard bike-lane proposal. This case intentionally has no verified implementation event.",
+        "match": "Only the decision-to-agency relationship is established in this seed. There is no reviewed later project or implementation link.",
+        "limits": [
+          "This is not a claim that DOT did nothing. It is a gap in the selected evidence.",
+          "The source was inherited from a reviewed public CityScroll pilot; the original PDF could not be fetched again."
+        ],
+        "next_action": "Locate a dated DOT response or project update for this exact corridor, then review it before changing the public status."
+      }
+    },
+    {
+      "seq": 40,
+      "recorded_on": "2026-09-30",
+      "kind": "evidence_added",
+      "case_id": "st-marks-place",
+      "payload": {
+        "id": "sm-vote",
+        "date": "2026-05-26",
+        "date_precision": "day",
+        "title": "The board supports the proposal",
+        "summary": "The inherited reviewed record documents support for a standard lane and outreach about parking changes. The original PDF was not re-fetched successfully in this research pass.",
+        "source_ids": [
+          "stmarks-vote"
+        ],
+        "reviewed": true,
+        "basis": "Inherited reviewed public record; direct re-fetch unavailable",
+        "type": "decision",
+        "result": "34 for · 1 against · 0 abstentions",
+        "result_basis": "Named Transportation item 2 tally in the inherited public pilot. Other-item and excluding-omnibus tallies are rejected."
+      }
+    },
+    {
+      "seq": 41,
+      "recorded_on": "2026-09-30",
+      "kind": "requirement_added",
+      "case_id": "st-marks-place",
+      "payload": {
+        "id": "st-marks-place-requirement-1",
+        "text": "Implement the standard bike lane",
+        "source_ids": [
+          "stmarks-vote"
+        ]
+      }
+    },
+    {
+      "seq": 42,
+      "recorded_on": "2026-09-30",
+      "kind": "requirement_assessed",
+      "case_id": "st-marks-place",
+      "payload": {
+        "requirement_id": "st-marks-place-requirement-1",
+        "state": "unknown",
+        "note": "A vote supporting a proposal is not implementation evidence.",
+        "source_ids": [
+          "stmarks-vote"
+        ],
+        "reviewed": true
+      }
+    },
+    {
+      "seq": 43,
+      "recorded_on": "2026-09-30",
+      "kind": "requirement_added",
+      "case_id": "st-marks-place",
+      "payload": {
+        "id": "st-marks-place-requirement-2",
+        "text": "Work with affected businesses on parking changes",
+        "source_ids": [
+          "stmarks-vote"
+        ]
+      }
+    },
+    {
+      "seq": 44,
+      "recorded_on": "2026-09-30",
+      "kind": "requirement_assessed",
+      "case_id": "st-marks-place",
+      "payload": {
+        "requirement_id": "st-marks-place-requirement-2",
+        "state": "unknown",
+        "note": "The request is recorded; a response or outreach record is not included.",
+        "source_ids": [
+          "stmarks-vote"
+        ],
+        "reviewed": true
+      }
+    }
+  ]
+}

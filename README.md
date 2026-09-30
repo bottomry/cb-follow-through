@@ -1,46 +1,31 @@
 # Follow-through
 
-A standalone, source-linked explorer for community-board decisions and agency outcomes. Four Manhattan street-safety casefiles connect recorded votes to agency actions, preserve gaps, and make original records inspectable.
+An independent, static application for tracing public decisions through later actions and documented outcomes. Its source of truth is an **append-only evidence journal**. The interface rebuilds casefiles, status, search and downloadable briefs from that journal. Visitors can replay each case one entry at a time and inspect every cited public record.
+
+The initial collection contains four Manhattan street-safety cases: Amsterdam Avenue, Chrystie Street, Columbus Avenue and St. Marks Place. Three have documented outcomes; St. Marks remains unresolved in this corpus. The application model is not tied to a street, a community board, a vote tally or one agency. A fictional library-hours case in the test suite proves the same workflow with a different domain and a decision without a vote.
 
 ## Run locally
 
 Requires Node.js 22 or newer. No third-party runtime or build dependencies.
 
-```sh
-npm ci --ignore-scripts
-npm run check
-npm start
-```
+    npm ci --ignore-scripts
+    npm run check
+    PORT=4173 BASE_PATH=/cb-follow-through/ npm start
 
-Open `http://127.0.0.1:4173/`. To simulate a GitHub Pages project site:
+Open http://127.0.0.1:4173/cb-follow-through/.
 
-```sh
-PORT=4173 BASE_PATH=/cb-follow-through/ npm start
-```
+## How the journal works
 
-Open `http://127.0.0.1:4173/cb-follow-through/`.
+The canonical data file is site/data/journal.json. It contains one ordered entries array. Each entry has a contiguous sequence, the date it entered this dataset, a kind, and a payload. Case openings, cited source additions, decisions, actions, outcomes, requirements and fulfillment assessments are separate entries. Replaying through sequence N rebuilds only the information admitted by N. The dates of historical decisions or actions live inside evidence payloads; they are **not** the journal entry date. The seed's sources were reviewed September 29, 2026, and the initial journal was assembled September 30.
 
-## The seed
+Corrections, retractions and case withdrawals are additional journal entries; they never overwrite the record they repair. A corrected requirement returns to unknown until it is assessed again, while a retracted claim or requirement disappears only from the current casefile and remains visible in replay and the audit trail. A withdrawn case remains visible and is labeled separately from documented or unknown outcomes. A CI check compares the journal to the relevant Git base and rejects edits, deletions or reordering of prior entries. Normal Git history provides an additional audit trail; this static demo does not claim tamper-proof storage. See [evidence and acceptance](docs/methodology.md) for the repair semantics.
 
-| Case | Board | Evidence chain |
-|---|---|---|
-| Amsterdam Avenue | Manhattan CB7 | February 2016 resolution → DOT design → December 2016 completion announcement |
-| Chrystie Street | Manhattan CB3 | March 2016 design → May 2016 final support → December 2016 completion announcement |
-| Columbus Avenue | Manhattan CB7 | June 2010 vote → partial installation update → later DOT confirmation of the 2010 project |
-| St. Marks Place | Manhattan CB3 | May 2026 decision inherited from a reviewed public pilot; outcome unknown |
+The public read model is computed in site/journal.mjs. Outcome status requires reviewed outcome evidence. A decision or planned action cannot produce a documented outcome, and a documented outcome does not automatically fulfill every requirement. Browser-local notes are unreviewed and remain outside the public journal.
 
-The first three are end-to-end evidence histories, not assertions that a board vote caused construction. The fourth demonstrates the missing-evidence state. The small curated sample is not a citywide performance measure. See [methodology](docs/methodology.md) and the in-app source register.
-
-Search, evidence-status filters, case permalinks, source excerpts, a request/outcome matrix, browser-local draft notes and downloadable text briefs all work without an account. Exported briefs include source URLs and separate unreviewed notes. No analytics, AI calls, CityScroll services or remote datasets are needed at runtime.
+To add another kind of public case, append a cited source_added entry, a case_opened entry with decision_maker, implementer, subject and domain, then the relevant evidence_added and requirement entries. A decision can say “Approved by trustees” with a written basis instead of a vote tally; place is optional. Give every entry its next sequence and actual dataset recording date. Keep historical event dates and precision inside the evidence payload. Run npm run check, inspect the new case in the browser, and verify its original source links. See [evidence and acceptance](docs/methodology.md).
 
 ## Static deployment
 
-`npm run build` validates the corpus and copies only `site/` into `dist/`. All asset and dataset paths are relative. Host `dist/` with any static server.
-
-The repository is currently private; public deployment requires a separate approval. The **Publish Pages** workflow is manual and refuses to run on a private repository or a branch other than `main`. After approval, complete the repository's public-release review, make it public, select GitHub Actions as the Pages source in repository settings, and dispatch **Publish Pages** from `main`. Ordinary pushes run checks only and cannot publish the site.
-
-## Extend the corpus
-
-Edit `site/data/cases.json` with new source records and cases. Cite the exact motion, date, vote, scope and document location. Keep plans separate from confirmed implementation. Preserve temporal precision, retrospective statements and unavailable sources. Run `npm run check`; then inspect the new case and every source link in the browser. Candidate evidence belongs in unreviewed local notes until reviewed.
+npm run build validates the journal and copies only site/ into dist/. All asset paths are relative and work under a GitHub Pages repository prefix. The repository is private; public deployment requires a separate approval. The Publish Pages workflow is manual and refuses to run on a private repository or a branch other than main. Ordinary pushes run checks only.
 
 Application code: MIT. See [NOTICE](NOTICE.md) for source attribution. Original public records remain the authority; application licensing does not claim ownership of those records.

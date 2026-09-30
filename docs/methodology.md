@@ -1,8 +1,12 @@
 # Evidence and acceptance
 
-The unit is a **casefile**: a bounded intervention on a named corridor, connected across board and agency records by reviewed geography, intervention and agency matches. It is not a name-match search result.
+The unit is a **casefile**: a bounded public decision and its later actions and outcomes, connected by reviewed subject, actor and scope. The initial collection uses named street corridors, but the model also admits other public services, policies and projects. A matching name alone is insufficient.
 
-Three cases contain the full chain: a recorded board decision, a dated agency action, and explicit implementation evidence. A proposal or planned start does not satisfy implementation. An implementation record closes only the supported part of a request. St. Marks intentionally lacks a later agency or implementation record.
+The canonical data is an append-only journal. A casefile is a read model rebuilt from the journal, not a separately maintained record. Each entry has a contiguous sequence and a dataset recording date. Historical event dates live inside cited evidence entries. Replay moves through the dataset's entry sequence; because the initial corpus was assembled together, replay does **not** claim to show what residents knew on each historical date. The initial source review date is September 29, 2026; journal assembly was September 30.
+
+Corrections append replacement evidence, source, requirement or case details with a reason and cited repair sources. A non-decision evidence correction may also reclassify an outcome as an action, assessment or request when that is all the reviewed record supports. Correcting a requirement resets its fulfillment to unknown until a later reviewed assessment. Evidence and requirement retractions remove unsupported claims only from the current projection; the original claim, target, reason and citations remain in replay and the audit trail. A cited case retraction withdraws the whole case without silently removing it from the collection or classifying it as an unknown outcome. Requirements have their own assessments, so the main outcome can be documented while an attached condition stays unknown. A CI check rejects changes to the earlier journal prefix.
+
+Three seed cases contain the full chain: a recorded board decision, a dated agency action, and explicit implementation evidence. A proposal or planned start does not satisfy an outcome. An outcome record closes only the supported part of a requirement. St. Marks intentionally lacks a later agency or outcome record.
 
 Dates describe records. Columbus's December 2012 presentation retrospectively confirms the original 2010 installation; the date does not imply construction finished in 2012. DOT's December 21, 2016 announcement confirms Amsterdam and Chrystie, but supplies no exact completion day. Chrystie's initial February 2015 request is retrospective and retains month precision.
 
@@ -17,6 +21,9 @@ No causal attribution, independent field audit, current-condition claim or repre
 ## Functional acceptance
 
 - Open each of the three completed casefiles and inspect a decision, agency action and implementation source.
+- Replay Amsterdam from its opening to its documented outcome, then to the still-unknown task-force requirement. Check that each step changes only after its journal entry.
+- Replay a correction in a test fixture and confirm the earlier interpretation remains recoverable. Add a fictional non-street decision without a vote and confirm the same projection works.
+- Try changing an existing journal entry on a feature branch and confirm the append-only check rejects it.
 - Open St. Marks and see missing action/outcome evidence, inherited-source disclosure and a follow-up question.
 - Inspect the unfulfilled Amsterdam task-force request without losing the documented lane result.
 - Search a street or board, combine an evidence filter, and recover from an empty result.

@@ -1,6 +1,6 @@
 # Source attribution
 
-The Amsterdam, Chrystie and Columbus casefiles use official records published by Manhattan Community Boards 3 and 7 and the New York City Department of Transportation. Titles, URLs, document locators, short excerpts and review methods are recorded in `site/data/cases.json`. Original documents are linked rather than bundled.
+The Amsterdam, Chrystie and Columbus casefiles use official records published by Manhattan Community Boards 3 and 7 and the New York City Department of Transportation. Titles, URLs, document locators, short excerpts and review methods are recorded as source entries in `site/data/journal.json`. Original documents are linked rather than bundled.
 
 The St. Marks Place seed was adapted from the CityScroll community-board resolution pilot, reviewed there on September 7, 2026:
 https://github.com/cityscroll/cityscroll-app/blob/22c25404364a6135e240ef158ca3bd80c9efd9b0/site/data/community_board_resolution_pilot.json
