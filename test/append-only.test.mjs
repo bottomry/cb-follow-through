@@ -68,6 +68,13 @@ test('history gate accepts additions and rejects rewritten prior entries',async(
   });
   assert.notEqual(pushed.status,0);
   assert.match(pushed.stderr,/rewrites or removes earlier entries/);
+  const shallow=join(dir,'shallow');
+  assert.equal(run('git',['clone','-q','--depth=1','file://'+dir,shallow]).status,0);
+  const shallowCheck=spawnSync(process.execPath,[checker],{
+   cwd:shallow,encoding:'utf8',env:process.env
+  });
+  assert.notEqual(shallowCheck.status,0);
+  assert.match(shallowCheck.stderr,/Cannot verify journal base HEAD\^/);
  } finally {await rm(dir,{recursive:true,force:true});}
 });
 test('a first branch push compares with its merge base, not moving main',async()=>{
