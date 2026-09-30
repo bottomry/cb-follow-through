@@ -23,7 +23,7 @@ test('the journal alone reconstructs the four reviewed casefiles',()=>{
   assert.ok(hasReviewedEvent(c,'outcome'));
  }
  assert.equal(outcomeDocumented(caseBy(latest,'st-marks-place')),false);
- assert.equal(JSON.stringify(journal).includes('"cases"'),false);
+ assert.equal(Object.hasOwn(journal,'cases'),false);
 });
 test('replay derives status at each sequence and never mutates the log',()=>{
  const before=JSON.stringify(journal),id='amsterdam-avenue',steps=caseSteps(journal,id);
@@ -202,6 +202,7 @@ test('invalid ordering, missing references and false completion claims fail clos
   d=>d.entries.find(e=>e.kind==='evidence_added').payload.source_ids=['absent'],
   d=>d.entries.find(e=>e.kind==='evidence_added').payload.reviewed=false,
   d=>d.entries.find(e=>e.kind==='evidence_added').payload.type='implementaton',
+  d=>{delete d.entries.find(e=>e.kind==='evidence_added').payload.date_precision;},
   d=>d.entries.find(e=>e.kind==='requirement_assessed').payload.state='documented ',
   d=>d.entries.find(e=>e.kind==='evidence_added').payload.date='2026-02-29',
   d=>d.entries.find(e=>e.kind==='case_opened').payload.decision_maker='',

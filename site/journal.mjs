@@ -30,6 +30,7 @@ const sourceRefs = (ids,sources) => Array.isArray(ids) && ids.length>0 && ids.ev
 function validEvidence(value,sources) {
  return hasSlug(value?.id) && fields(value,['title','summary','basis']) &&
  evidenceTypes.has(value.type) && value.reviewed===true &&
+ (value.date_precision==='day'||value.date_precision==='month') &&
  validDate(value.date,value.date_precision) && sourceRefs(value.source_ids,sources) &&
  (value.type!=='decision' || fields(value,['result','result_basis']));
 }
