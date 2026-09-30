@@ -46,3 +46,39 @@ test('history gate accepts additions and rejects rewritten prior entries',async(
   assert.match(pushed.stderr,/rewrites or removes earlier entries/);
  } finally {await rm(dir,{recursive:true,force:true});}
 });
+test('a first branch push compares with its merge base, not moving main',async()=>{
+ const dir=await mkdtemp(join(tmpdir(),'follow-through-branch-'));
+ const path=join(dir,'site/data/journal.json');
+ const run=(cmd,args=[],env={})=>spawnSync(cmd,args,{cwd:dir,encoding:'utf8',env:{...process.env,...env}});
+ const append=reason=>{
+  const data=structuredClone(seed);data.entries.push({seq:data.entries.length+1,recorded_on:'2026-09-30',
+   kind:'collection_updated',payload:{reason,changes:{reviewed_on:'2026-09-30'}}});return data;
+ };
+ try {
+  await mkdir(join(dir,'site/data'),{recursive:true});
+  await writeFile(path,JSON.stringify(seed));
+  for(const args of [['init','-q'],['config','user.email','fixture@example.org'],
+   ['config','user.name','Fixture'],['add','site/data/journal.json'],['commit','-qm','Initial journal']])
+   assert.equal(run('git',args).status,0);
+  const branchPoint=run('git',['rev-parse','HEAD']).stdout.trim();
+  assert.equal(run('git',['switch','-qc','feature']).status,0);
+  await writeFile(path,JSON.stringify(append('Feature review')));
+  assert.equal(run('git',['add','site/data/journal.json']).status,0);
+  assert.equal(run('git',['commit','-qm','Feature addition']).status,0);
+  const feature=run('git',['rev-parse','HEAD']).stdout.trim();
+  assert.equal(run('git',['switch','-qc','moving-main',branchPoint]).status,0);
+  await writeFile(path,JSON.stringify(append('Main review')));
+  assert.equal(run('git',['add','site/data/journal.json']).status,0);
+  assert.equal(run('git',['commit','-qm','Main addition']).status,0);
+  assert.equal(run('git',['update-ref','refs/remotes/origin/main','HEAD']).status,0);
+  assert.equal(run('git',['switch','-q','feature']).status,0);
+  assert.equal(run('git',['rev-parse','HEAD']).stdout.trim(),feature);
+  const eventPath=join(dir,'push-event.json');
+  await writeFile(eventPath,JSON.stringify({before:'0'.repeat(40)}));
+  const checked=run(process.execPath,[checker],{
+   JOURNAL_BASE_REF:'',GITHUB_EVENT_NAME:'push',GITHUB_EVENT_PATH:eventPath,GITHUB_REF_NAME:'feature'
+  });
+  assert.equal(checked.status,0,checked.stderr);
+  assert.match(checked.stdout,new RegExp('Preserved '+seed.entries.length+' earlier journal entries'));
+ } finally {await rm(dir,{recursive:true,force:true});}
+});

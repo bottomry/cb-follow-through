@@ -16,7 +16,10 @@ function eventBase() {
  return '';
 }
 function fallbackBase(branch) {
- if(branch!=='main' && git('rev-parse','--verify','origin/main').status===0)return 'origin/main';
+ if(branch!=='main' && git('rev-parse','--verify','origin/main').status===0) {
+  const result=git('merge-base','HEAD','origin/main');
+  if(result.status===0 && result.stdout.trim())return result.stdout.trim();
+ }
  return 'HEAD^';
 }
 const current=JSON.parse(readFileSync(path,'utf8'));

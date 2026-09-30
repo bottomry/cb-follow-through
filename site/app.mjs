@@ -11,6 +11,11 @@ function sourceButtons(ids) {
  return ids.map(id=>{const source=currentSources.find(s=>s.id===id);
   return '<button class="source" data-source="'+esc(id)+'">↗ '+esc(source.title)+'</button>';}).join('');
 }
+function correctionHTML(evidence) {
+ if(!evidence.correction_reason)return '';
+ return '<div class="source-row"><span class="muted">Correction: '+esc(evidence.correction_reason)+
+  '</span><br><span class="muted">Correction sources</span><br>'+sourceButtons(evidence.correction_source_ids)+'</div>';
+}
 function sourceHTML(source) {
  return '<article class="source-detail"><p class="eyebrow">'+esc(source.publisher)+'</p><h2>'+esc(source.title)+
   '</h2><p>'+esc(source.locator)+'</p><blockquote>“'+esc(source.excerpt)+'”</blockquote><p>'+esc(source.access_note||'')+
@@ -64,12 +69,12 @@ function renderCase() {
  const decision=c.decision?
   '<div class="vote"><span class="eyebrow">THE DECISION · '+esc(dateLabel(c.decision.date))+
   ' · LEDGER '+c.decision.ledger_seq+'</span><strong>'+esc(c.decision.result)+'</strong><p>'+
-  esc(c.decision.result_basis)+'</p>'+sourceButtons(c.decision.source_ids)+'</div>':
+  esc(c.decision.result_basis)+'</p>'+sourceButtons(c.decision.source_ids)+correctionHTML(c.decision)+'</div>':
   '<div class="vote"><strong>The decision is not yet in this replay step.</strong></div>';
  const timeline=events.map(e=>'<article class="event"><div class="event-date">'+esc(dateLabel(e.date))+
   '<span>'+esc(e.type)+' · ledger '+e.ledger_seq+'</span></div><div><h4>'+esc(e.title)+'</h4><p>'+
   esc(e.summary)+'</p>'+(e.basis!=='Direct published record'?'<p class="qualification">'+esc(e.basis)+'</p>':'')+
-  '<div class="source-row">'+sourceButtons(e.source_ids)+'</div></div></article>').join('')||
+  '<div class="source-row">'+sourceButtons(e.source_ids)+'</div>'+correctionHTML(e)+'</div></article>').join('')||
   '<p class="empty">No public decision or action is included at this step.</p>';
  const requirements=c.requirements.map(r=>'<article class="request"><span class="badge '+
   (r.state==='documented'?'green':'amber')+'">'+(r.state==='documented'?'Documented':'Not established')+

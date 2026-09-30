@@ -51,6 +51,25 @@ test('later corrections are visible as a new ledger entry and earlier views surv
  assert.equal(changed.entries[sequence-1].kind,'evidence_corrected');
  assert.equal(changed.entries.find(e=>e.kind==='evidence_added'&&e.payload.id===original.id).payload.summary,original.summary);
 });
+test('evidence corrections preserve distinct correction provenance',()=>{
+ const changed=copy(),id='st-marks-place',original=caseBy(projectJournal(changed),id).decision;
+ const correctionSource=latest.sources.find(source=>!original.source_ids.includes(source.id));
+ const replacement={...original,summary:'Corrected with separate supporting provenance.'};
+ delete replacement.ledger_seq;
+ add(changed,'evidence_corrected',id,{target_id:original.id,reason:'A separate record required this correction.',
+  source_ids:[correctionSource.id],replacement});
+ const corrected=caseBy(projectJournal(changed),id).decision;
+ assert.deepEqual(corrected.source_ids,original.source_ids);
+ assert.deepEqual(corrected.correction_source_ids,[correctionSource.id]);
+ assert.equal(corrected.correction_reason,'A separate record required this correction.');
+ const correctedSource=add(changed,'source_corrected',null,{target_id:correctionSource.id,
+  reason:'Correction source locator clarified.',replacement:{...correctionSource,locator:'Clarified correction locator.'}});
+ assert.equal(caseSteps(changed,id).includes(correctedSource),true);
+ const brief=handoff(caseBy(projectJournal(changed),id),projectJournal(changed).sources);
+ assert.match(brief,new RegExp('Sources: \\['+original.source_ids[0]+'\\]'));
+ assert.match(brief,new RegExp('Correction sources: \\['+correctionSource.id+'\\]'));
+ assert.match(brief,new RegExp('\\['+correctionSource.id+'\\] '+correctionSource.title));
+});
 test('source and collection corrections preserve earlier projections',()=>{
  const changed=copy(),source=latest.sources[0];
  const earlier=journal.entries.length;

@@ -100,7 +100,8 @@ function fold(journal,through=Infinity) {
        !validEvidence(payload.replacement,sources) || payload.replacement.id!==payload.target_id)throw Error('Invalid evidence correction.');
     const old=c.decision?.id===payload.target_id?c.decision:c.events.find(e=>e.id===payload.target_id);
     if(!old || old.type!==payload.replacement.type)throw Error('Correction target missing or changes evidence type.');
-    const replacement={...structuredClone(payload.replacement),ledger_seq:entry.seq};
+    const replacement={...structuredClone(payload.replacement),ledger_seq:entry.seq,
+     correction_reason:payload.reason,correction_source_ids:[...payload.source_ids]};
     if(c.decision?.id===payload.target_id)c.decision=replacement;
     else c.events[c.events.findIndex(e=>e.id===payload.target_id)]=replacement;
    } else if(entry.kind==='requirement_added') {
@@ -169,12 +170,14 @@ export function corpusMetadata(data) {
   sourceSummary:sourceCount+' public document'+(sourceCount===1?'':'s')+' behind '+caseCount+' casefile'+(caseCount===1?'':'s')+'.'};
 }
 export function handoff(c,sources,note='',sequence=null) {
- const ids=new Set([...(c.decision?.source_ids||[]),...c.events.flatMap(e=>e.source_ids),
+ const evidence=[...(c.decision?[c.decision]:[]),...c.events];
+ const ids=new Set([...evidence.flatMap(e=>[...e.source_ids,...(e.correction_source_ids||[])]),
    ...c.requirements.flatMap(r=>[...r.source_ids,...r.assessment_source_ids])]);
  const cite=sourceIds=>sourceIds.map(id=>'['+id+']').join(' ');
  const eventRows=timelineEvents(c).map(e=>dateLabel(e.date)+' — '+e.title+' [ledger '+e.ledger_seq+']\n'+e.summary+'\n'+
   (e.type==='decision'?'Decision: '+e.result+'\nDecision context: '+e.result_basis+'\n':'')+
-  'Evidence basis: '+e.basis+'\nSources: '+cite(e.source_ids)).join('\n\n');
+  'Evidence basis: '+e.basis+'\nSources: '+cite(e.source_ids)+
+  (e.correction_reason?'\nCorrection: '+e.correction_reason+'\nCorrection sources: '+cite(e.correction_source_ids):'')).join('\n\n');
  const requirements=c.requirements.map(r=>r.state.toUpperCase()+' — '+r.text+'\n'+r.note+
   '\nSources: '+cite([...new Set([...r.source_ids,...r.assessment_source_ids])])).join('\n\n');
  const sourceRows=sources.filter(s=>ids.has(s.id)).map(s=>'['+s.id+'] '+s.title+'\n'+s.locator+'\n'+s.url+'\n'+s.review_method).join('\n\n');
