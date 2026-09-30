@@ -137,19 +137,24 @@ export function validateJournal(journal) {
  return journal;
 }
 export function projectJournal(journal,through=Infinity) {validateJournal(journal);return fold(journal,through);}
+function caseSourceRefs(c) {
+ if(!c)return new Set();
+ const evidence=[...(c.decision?[c.decision]:[]),...c.events];
+ return new Set([...evidence.flatMap(e=>[...e.source_ids,...(e.correction_source_ids||[])]),
+  ...c.requirements.flatMap(r=>[...r.source_ids,...r.assessment_source_ids])]);
+}
 export function caseSteps(journal,id) {
  const c=projectJournal(journal).cases.find(row=>row.id===id);
  if(!c)return [];
  const opened=journal.entries.find(entry=>entry.kind==='case_opened'&&entry.case_id===id).seq;
- const sources=new Set(),steps=[];
+ const steps=[];
  for(const entry of journal.entries) {
   if(entry.seq<opened)continue;
-  if(entry.case_id===id) {
-   steps.push(entry.seq);
-   for(const sourceId of [...(entry.payload?.source_ids||[]),...(entry.payload?.replacement?.source_ids||[])])
-    sources.add(sourceId);
-  } else if(entry.kind==='collection_updated' ||
-    (entry.kind==='source_corrected'&&sources.has(entry.payload.target_id)))steps.push(entry.seq);
+  if(entry.case_id===id || entry.kind==='collection_updated')steps.push(entry.seq);
+  else if(entry.kind==='source_corrected') {
+   const before=fold(journal,entry.seq-1).cases.find(row=>row.id===id);
+   if(caseSourceRefs(before).has(entry.payload.target_id))steps.push(entry.seq);
+  }
  }
  return steps;
 }
@@ -171,9 +176,7 @@ export function corpusMetadata(data) {
   sourceSummary:sourceCount+' public document'+(sourceCount===1?'':'s')+' behind '+caseCount+' casefile'+(caseCount===1?'':'s')+'.'};
 }
 export function handoff(c,sources,note='',sequence=null,latest=sequence===null) {
- const evidence=[...(c.decision?[c.decision]:[]),...c.events];
- const ids=new Set([...evidence.flatMap(e=>[...e.source_ids,...(e.correction_source_ids||[])]),
-   ...c.requirements.flatMap(r=>[...r.source_ids,...r.assessment_source_ids])]);
+ const ids=caseSourceRefs(c);
  const cite=sourceIds=>sourceIds.map(id=>'['+id+']').join(' ');
  const eventRows=timelineEvents(c).map(e=>dateLabel(e.date)+' — '+e.title+' [ledger '+e.ledger_seq+']\n'+e.summary+'\n'+
   (e.type==='decision'?'Decision: '+e.result+'\nDecision context: '+e.result_basis+'\n':'')+

@@ -103,6 +103,40 @@ test('replay includes source corrections only after the case cites the source',(
  assert.equal(steps.includes(beforeCitation),false);
  assert.equal(steps.includes(afterCitation),true);
 });
+test('replay drops superseded evidence citations until they are cited again',()=>{
+ const changed=copy(),id='st-marks-place';
+ const [oldSource,replacementSource]=latest.sources.filter(source=>source.id!=='stmarks-vote').slice(0,2);
+ const original={id:'replaceable-citation-event',type:'action',date:'2026-09-30',date_precision:'day',
+  title:'Replaceable citation',summary:'Test fixture with a replaceable source.',basis:'Fictional test fixture',
+  reviewed:true,source_ids:[oldSource.id]};
+ add(changed,'evidence_added',id,original);
+ const replacement={...original,source_ids:[replacementSource.id],summary:'Replacement citation fixture.'};
+ add(changed,'evidence_corrected',id,{target_id:original.id,reason:'Replace the supporting source.',
+  source_ids:[replacementSource.id],replacement});
+ const staleCorrection=add(changed,'source_corrected',null,{target_id:oldSource.id,
+  reason:'Old source locator changed.',replacement:{...oldSource,locator:'First corrected locator.'}});
+ assert.equal(caseSteps(changed,id).includes(staleCorrection),false);
+ add(changed,'evidence_added',id,{id:'recited-source-event',type:'action',date:'2026-09-30',
+  date_precision:'day',title:'Source cited again',summary:'Test fixture cites the old source again.',
+  basis:'Fictional test fixture',reviewed:true,source_ids:[oldSource.id]});
+ const currentSource=projectJournal(changed).sources.find(source=>source.id===oldSource.id);
+ const currentCorrection=add(changed,'source_corrected',null,{target_id:oldSource.id,
+  reason:'Current source locator changed.',replacement:{...currentSource,locator:'Second corrected locator.'}});
+ assert.equal(caseSteps(changed,id).includes(currentCorrection),true);
+});
+test('replay drops superseded requirement assessment citations',()=>{
+ const changed=copy(),id='st-marks-place';
+ const [baseline,oldAssessment,newAssessment]=latest.sources.filter(source=>source.id!=='stmarks-vote').slice(0,3);
+ add(changed,'requirement_added',id,{id:'reassessment-citation-fixture',
+  text:'Test-only reassessment requirement',source_ids:[baseline.id]});
+ add(changed,'requirement_assessed',id,{requirement_id:'reassessment-citation-fixture',state:'unknown',
+  note:'First test-only assessment.',source_ids:[oldAssessment.id],reviewed:true});
+ add(changed,'requirement_assessed',id,{requirement_id:'reassessment-citation-fixture',state:'documented',
+  note:'Replacement test-only assessment.',source_ids:[newAssessment.id],reviewed:true});
+ const staleCorrection=add(changed,'source_corrected',null,{target_id:oldAssessment.id,
+  reason:'Superseded assessment source changed.',replacement:{...oldAssessment,locator:'Corrected old assessment locator.'}});
+ assert.equal(caseSteps(changed,id).includes(staleCorrection),false);
+});
 test('later decisions retain prior decisions in the evidence trail',()=>{
  const changed=copy(),id='st-marks-place';
  const second={id:'later-decision-test',type:'decision',date:'2026-09-30',date_precision:'day',
