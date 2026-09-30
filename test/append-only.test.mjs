@@ -45,6 +45,12 @@ test('history gate accepts additions and rejects rewritten prior entries',async(
    ['config','user.name','Fixture'],['add','site/data/journal.json'],['commit','-qm','Initial journal']])
    assert.equal(run('git',args).status,0);
   const initial=run('git',['rev-parse','HEAD']).stdout.trim();
+  await writeFile(join(dir,'setup.txt'),'Unrelated second commit.');
+  assert.equal(run('git',['add','setup.txt']).status,0);
+  assert.equal(run('git',['commit','-qm','Setup follow-up']).status,0);
+  const zeroBase=run(process.execPath,[checker],{JOURNAL_BASE_REF:'0'.repeat(40)});
+  assert.notEqual(zeroBase.status,0);
+  assert.match(zeroBase.stderr,/Cannot verify journal base 0000000000000000000000000000000000000000/);
   const check=()=>run(process.execPath,[checker],{JOURNAL_BASE_REF:'HEAD'});
   assert.equal(check().status,0);
   const altered=structuredClone(seed);altered.entries[0].payload.scope='Rewritten scope';

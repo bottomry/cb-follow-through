@@ -24,13 +24,14 @@ function fallbackBase(branch) {
 }
 const current=JSON.parse(readFileSync(path,'utf8'));
 const branch=process.env.GITHUB_REF_NAME||git('branch','--show-current').stdout.trim();
-const selected=process.env.JOURNAL_BASE_REF||eventBase();
-const base=!selected||zeroSha.test(selected)?fallbackBase(branch):selected;
+const explicitBase=process.env.JOURNAL_BASE_REF;
+const selected=explicitBase||eventBase();
+const base=!selected||(!explicitBase&&zeroSha.test(selected))?fallbackBase(branch):selected;
 const baseExists=git('rev-parse','--verify',base+'^{commit}').status===0;
 const headObject=git('cat-file','-p','HEAD');
 const headHeader=headObject.stdout.split('\n\n',1)[0];
 const rootCommit=headObject.status===0 && !/^parent /m.test(headHeader);
-const rootBootstrap=!baseExists && rootCommit && !process.env.JOURNAL_BASE_REF &&
+const rootBootstrap=!baseExists && rootCommit && !explicitBase &&
  (base==='HEAD^'||process.env.GITHUB_EVENT_NAME==='push');
 if(rootBootstrap) {
  const committed=git('show','HEAD:'+path);
