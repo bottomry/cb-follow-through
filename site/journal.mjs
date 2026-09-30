@@ -51,7 +51,8 @@ function validCase(value) {
 // A correction replaces only the projected value; it never edits or removes an earlier entry.
 function fold(journal,through=Infinity) {
  if(journal?.schema_version!==2 || !Array.isArray(journal.entries) || !journal.entries.length)throw Error('Unsupported evidence journal.');
- const cases=new Map(),sources=new Map();let scope='',collectionLabel='',reviewedOn='',lastRecorded='';
+ const cases=new Map(),sources=new Map(),evidenceIds=new Map(),requirementIds=new Map();
+ let scope='',collectionLabel='',reviewedOn='',lastRecorded='';
  for(let index=0;index<journal.entries.length;index++) {
   const entry=journal.entries[index];
   if(!isRecord(entry) || entry.seq!==index+1 || !validDate(entry.recorded_on) ||
@@ -84,13 +85,15 @@ function fold(journal,through=Infinity) {
    if(!hasSlug(entry.case_id))throw Error('Journal case reference missing.');
    if(entry.kind==='case_opened') {
     if(cases.has(entry.case_id) || !validCase(payload) || payload.id!==entry.case_id)throw Error('Invalid case opening.');
-    cases.set(entry.case_id,{...structuredClone(payload),decision:null,events:[],requirements:[],history:[]});
+    cases.set(entry.case_id,{...structuredClone(payload),decision:null,events:[],requirements:[],history:[],withdrawn:false});
+    evidenceIds.set(entry.case_id,new Set());requirementIds.set(entry.case_id,new Set());
     continue;
    }
    const c=cases.get(entry.case_id);if(!c)throw Error('Journal refers to unopened case.');
+   if(c.withdrawn)throw Error('Journal refers to withdrawn case.');
    if(entry.kind==='evidence_added') {
-    if(!validEvidence(payload,sources) || c.decision?.id===payload.id ||
-       c.events.some(e=>e.id===payload.id))throw Error('Invalid evidence entry.');
+    if(!validEvidence(payload,sources) || evidenceIds.get(entry.case_id).has(payload.id))throw Error('Invalid evidence entry.');
+    evidenceIds.get(entry.case_id).add(payload.id);
     const evidence={...structuredClone(payload),ledger_seq:entry.seq};
     if(evidence.type==='decision') {
      if(c.decision)c.events.push(c.decision);
@@ -100,14 +103,20 @@ function fold(journal,through=Infinity) {
     if(!fields(payload,['target_id','reason']) || !sourceRefs(payload.source_ids,sources) ||
        !validEvidence(payload.replacement,sources) || payload.replacement.id!==payload.target_id)throw Error('Invalid evidence correction.');
     const old=c.decision?.id===payload.target_id?c.decision:c.events.find(e=>e.id===payload.target_id);
-    if(!old || old.type!==payload.replacement.type)throw Error('Correction target missing or changes evidence type.');
+    if(!old || (old.type==='decision')!==(payload.replacement.type==='decision'))throw Error('Invalid evidence reclassification.');
     const replacement={...structuredClone(payload.replacement),ledger_seq:entry.seq,
      correction_reason:payload.reason,correction_source_ids:[...payload.source_ids]};
     if(c.decision?.id===payload.target_id)c.decision=replacement;
     else c.events[c.events.findIndex(e=>e.id===payload.target_id)]=replacement;
+   } else if(entry.kind==='evidence_retracted') {
+    if(!fields(payload,['target_id','reason']) || !sourceRefs(payload.source_ids,sources))throw Error('Invalid evidence retraction.');
+    const target=c.decision?.id===payload.target_id?c.decision:c.events.find(e=>e.id===payload.target_id);
+    if(!target || target.type==='decision')throw Error('Invalid evidence retraction target.');
+    c.events.splice(c.events.findIndex(e=>e.id===payload.target_id),1);
    } else if(entry.kind==='requirement_added') {
-    if(!hasSlug(payload?.id) || c.requirements.some(r=>r.id===payload.id) ||
+    if(!hasSlug(payload?.id) || requirementIds.get(entry.case_id).has(payload.id) ||
        !fields(payload,['text']) || !sourceRefs(payload.source_ids,sources))throw Error('Invalid requirement entry.');
+    requirementIds.get(entry.case_id).add(payload.id);
     c.requirements.push({...structuredClone(payload),state:'unknown',note:'No reviewed fulfillment assessment recorded.',
       assessment_source_ids:[],ledger_seq:entry.seq});
    } else if(entry.kind==='requirement_assessed') {
@@ -117,6 +126,25 @@ function fold(journal,through=Infinity) {
     if(!requirement)throw Error('Assessment target missing.');
     requirement.state=payload.state;requirement.note=payload.note;
     requirement.assessment_source_ids=[...payload.source_ids];requirement.ledger_seq=entry.seq;
+   } else if(entry.kind==='requirement_corrected') {
+    if(!fields(payload,['target_id','reason']) || !sourceRefs(payload.source_ids,sources) ||
+       !hasSlug(payload.replacement?.id) || payload.replacement.id!==payload.target_id ||
+       !fields(payload.replacement,['text']) || !sourceRefs(payload.replacement.source_ids,sources))
+     throw Error('Invalid requirement correction.');
+    const index=c.requirements.findIndex(r=>r.id===payload.target_id);
+    if(index<0)throw Error('Requirement correction target missing.');
+    c.requirements[index]={...structuredClone(payload.replacement),state:'unknown',
+     note:'No reviewed fulfillment assessment recorded.',assessment_source_ids:[],ledger_seq:entry.seq,
+     correction_reason:payload.reason,correction_source_ids:[...payload.source_ids]};
+   } else if(entry.kind==='requirement_retracted') {
+    if(!fields(payload,['target_id','reason']) || !sourceRefs(payload.source_ids,sources))throw Error('Invalid requirement retraction.');
+    const index=c.requirements.findIndex(r=>r.id===payload.target_id);
+    if(index<0)throw Error('Requirement retraction target missing.');
+    c.requirements.splice(index,1);
+   } else if(entry.kind==='case_retracted') {
+    if(!fields(payload,['reason']) || !sourceRefs(payload.source_ids,sources))throw Error('Invalid case retraction.');
+    c.withdrawn=true;c.withdrawal_reason=payload.reason;c.withdrawal_source_ids=[...payload.source_ids];
+    c.withdrawal_ledger_seq=entry.seq;
    } else if(entry.kind==='case_updated') {
     if(!fields(payload,['reason']) || !isRecord(payload.changes) || !Object.keys(payload.changes).length ||
        Object.keys(payload.changes).some(k=>!mutableFields.has(k)))throw Error('Invalid case update.');
@@ -124,7 +152,8 @@ function fold(journal,through=Infinity) {
     Object.assign(c,structuredClone(payload.changes));
    } else throw Error('Unknown journal entry kind.');
    c.history.push({seq:entry.seq,recorded_on:entry.recorded_on,kind:entry.kind,
-     reason:payload.reason||'',title:payload.title||payload.text||payload.replacement?.title||payload.requirement_id||''});
+     reason:payload.reason||'',source_ids:[...(payload.source_ids||[])],target_id:payload.target_id||'',
+     title:payload.title||payload.text||payload.replacement?.title||payload.replacement?.text||payload.requirement_id||''});
   }
  }
  return {schema_version:2,scope,collection_label:collectionLabel,reviewed_on:reviewedOn,
@@ -133,7 +162,7 @@ function fold(journal,through=Infinity) {
 export function validateJournal(journal) {
  const data=fold(journal);
  if(!data.scope || !data.cases.length || !data.sources.length ||
-    data.cases.some(c=>!c.decision))throw Error('Incomplete evidence journal.');
+    data.cases.some(c=>!c.decision&&!c.withdrawn))throw Error('Incomplete evidence journal.');
  return journal;
 }
 export function projectJournal(journal,through=Infinity) {validateJournal(journal);return fold(journal,through);}
@@ -141,7 +170,8 @@ function caseSourceRefs(c) {
  if(!c)return new Set();
  const evidence=[...(c.decision?[c.decision]:[]),...c.events];
  return new Set([...evidence.flatMap(e=>[...e.source_ids,...(e.correction_source_ids||[])]),
-  ...c.requirements.flatMap(r=>[...r.source_ids,...r.assessment_source_ids])]);
+  ...c.requirements.flatMap(r=>[...r.source_ids,...r.assessment_source_ids,...(r.correction_source_ids||[])]),
+  ...c.history.filter(row=>row.kind.endsWith('_corrected')||row.kind.endsWith('_retracted')).flatMap(row=>row.source_ids)]);
 }
 export function caseSteps(journal,id) {
  const c=projectJournal(journal).cases.find(row=>row.id===id);
@@ -159,7 +189,7 @@ export function caseSteps(journal,id) {
  return steps;
 }
 export const timelineEvents=c=>[...(c.decision?[c.decision]:[]),...c.events].sort((a,b)=>a.date.localeCompare(b.date)||a.ledger_seq-b.ledger_seq);
-export const hasReviewedEvent=(c,type)=>c.events.some(e=>e.type===type&&e.reviewed===true&&e.source_ids.length);
+export const hasReviewedEvent=(c,type)=>!c.withdrawn&&c.events.some(e=>e.type===type&&e.reviewed===true&&e.source_ids.length);
 export const outcomeDocumented=c=>hasReviewedEvent(c,'outcome');
 export function filterCases(cases,query='',status='all') {
  const q=query.trim().toLowerCase();
@@ -183,13 +213,18 @@ export function handoff(c,sources,note='',sequence=null,latest=sequence===null) 
   'Evidence basis: '+e.basis+'\nSources: '+cite(e.source_ids)+
   (e.correction_reason?'\nCorrection: '+e.correction_reason+'\nCorrection sources: '+cite(e.correction_source_ids):'')).join('\n\n');
  const requirements=c.requirements.map(r=>r.state.toUpperCase()+' — '+r.text+'\n'+r.note+
-  '\nSources: '+cite([...new Set([...r.source_ids,...r.assessment_source_ids])])).join('\n\n');
+  '\nSources: '+cite([...new Set([...r.source_ids,...r.assessment_source_ids])])+
+  (r.correction_reason?'\nCorrection: '+r.correction_reason+'\nCorrection sources: '+cite(r.correction_source_ids):'')).join('\n\n');
+ const repairs=c.history.filter(row=>row.kind.endsWith('_corrected')||row.kind.endsWith('_retracted')).map(row=>
+  row.kind.replaceAll('_',' ').toUpperCase()+' — '+(row.target_id||c.id)+' [ledger '+row.seq+']\n'+row.reason+
+  '\nSources: '+cite(row.source_ids)).join('\n\n');
  const limits=latest?c.limits.join('\n'):'Latest casefile limits are omitted from this partial replay.';
  const sourceRows=sources.filter(s=>ids.has(s.id)).map(s=>'['+s.id+'] '+s.title+'\n'+s.locator+'\n'+s.url+'\n'+s.review_method).join('\n\n');
  return c.title+' — '+c.decision_maker+'\n'+c.subject+'\nLedger: '+(sequence??'latest')+
-  '\nStatus: '+(outcomeDocumented(c)?'Outcome documented':'Outcome unknown in this corpus')+
+  '\nStatus: '+(c.withdrawn?'Case withdrawn':outcomeDocumented(c)?'Outcome documented':'Outcome unknown in this corpus')+
   '\n\nEVIDENCE TRAIL\n'+(eventRows||'(No decision or action in this replay step.)')+
   '\n\nREQUIREMENTS\n'+(requirements||'(No requirements recorded at this replay step.)')+
+  '\n\nCORRECTIONS AND RETRACTIONS\n'+(repairs||'(No repairs recorded at this replay step.)')+
   '\n\n'+(latest?'LIMITS':'LIMITS — PARTIAL REPLAY')+'\n'+limits+
   '\n\nSOURCES\n'+sourceRows+'\n\nLOCAL DRAFT — UNREVIEWED\n'+(note||'(No draft)')+'\n';
 }

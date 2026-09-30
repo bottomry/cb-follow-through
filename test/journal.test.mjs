@@ -70,6 +70,67 @@ test('evidence corrections preserve distinct correction provenance',()=>{
  assert.match(brief,new RegExp('Correction sources: \\['+correctionSource.id+'\\]'));
  assert.match(brief,new RegExp('\\['+correctionSource.id+'\\] '+correctionSource.title));
 });
+test('evidence repair reclassifies and retracts outcomes without rewriting history',()=>{
+ const reclassified=copy(),id='amsterdam-avenue';
+ const original=caseBy(projectJournal(reclassified),id).events.find(event=>event.type==='outcome');
+ const replacement={...original,type:'action',title:'Reclassified test action'};
+ delete replacement.ledger_seq;
+ const correctedAt=add(reclassified,'evidence_corrected',id,{target_id:original.id,
+  reason:'Later review supports action, not outcome.',source_ids:[original.source_ids[0]],replacement});
+ assert.equal(outcomeDocumented(caseBy(projectJournal(reclassified,correctedAt-1),id)),true);
+ const corrected=caseBy(projectJournal(reclassified),id);
+ assert.equal(outcomeDocumented(corrected),false);
+ assert.equal(corrected.events.find(event=>event.id===original.id).type,'action');
+ assert.equal(reclassified.entries.find(entry=>entry.kind==='evidence_added'&&entry.payload.id===original.id).payload.type,'outcome');
+
+ const retracted=copy(),retractedId='chrystie-street';
+ const outcome=caseBy(projectJournal(retracted),retractedId).events.find(event=>event.type==='outcome');
+ const retractedAt=add(retracted,'evidence_retracted',retractedId,{target_id:outcome.id,
+  reason:'Later review found no support for this outcome.',source_ids:[outcome.source_ids[0]]});
+ assert.equal(outcomeDocumented(caseBy(projectJournal(retracted,retractedAt-1),retractedId)),true);
+ const current=caseBy(projectJournal(retracted),retractedId);
+ assert.equal(outcomeDocumented(current),false);
+ assert.equal(current.events.some(event=>event.id===outcome.id),false);
+ const brief=handoff(current,projectJournal(retracted).sources);
+ assert.match(brief,/EVIDENCE RETRACTED/);
+ assert.match(brief,/Later review found no support for this outcome/);
+ assert.match(brief,new RegExp('Sources: \\['+outcome.source_ids[0]+'\\]'));
+});
+test('requirements can be corrected, reassessed and retracted append-only',()=>{
+ const changed=copy(),id='st-marks-place';
+ const original=caseBy(projectJournal(changed),id).requirements[0],sourceId=original.source_ids[0];
+ const correctedAt=add(changed,'requirement_corrected',id,{target_id:original.id,
+  reason:'The request wording and scope were corrected.',source_ids:[sourceId],
+  replacement:{id:original.id,text:'Corrected test-only request',source_ids:[sourceId]}});
+ assert.equal(caseBy(projectJournal(changed,correctedAt-1),id).requirements[0].text,original.text);
+ let requirement=caseBy(projectJournal(changed),id).requirements.find(row=>row.id===original.id);
+ assert.equal(requirement.text,'Corrected test-only request');
+ assert.equal(requirement.state,'unknown');
+ assert.deepEqual(requirement.assessment_source_ids,[]);
+ add(changed,'requirement_assessed',id,{requirement_id:original.id,state:'documented',
+  note:'Test-only reassessment.',source_ids:[sourceId],reviewed:true});
+ const retractedAt=add(changed,'requirement_retracted',id,{target_id:original.id,
+  reason:'Later review withdrew the request.',source_ids:[sourceId]});
+ assert.equal(caseBy(projectJournal(changed,retractedAt-1),id).requirements.some(row=>row.id===original.id),true);
+ const current=caseBy(projectJournal(changed),id);
+ assert.equal(current.requirements.some(row=>row.id===original.id),false);
+ const brief=handoff(current,projectJournal(changed).sources);
+ assert.match(brief,/REQUIREMENT CORRECTED/);
+ assert.match(brief,/REQUIREMENT RETRACTED/);
+});
+test('a cited case tombstone visibly withdraws a case without a decision',()=>{
+ const changed=copy(),id='withdrawn-case-fixture',sourceId='stmarks-vote';
+ add(changed,'case_opened',id,{id,number:'T3',title:'Withdrawn fixture case',subtitle:'Fictional test case',
+  decision_maker:'Fixture board',implementer:'Fixture office',subject:'Withdrawn fixture',period:'2026',
+  domain:'Testing',summary:'A test-only withdrawn case.',match:'No live claim remains.',next_action:'None.',
+  limits:['No real-world claim is made.']});
+ const withdrawnAt=add(changed,'case_retracted',id,{reason:'The entire fixture case was withdrawn.',source_ids:[sourceId]});
+ const before=caseBy(projectJournal(changed,withdrawnAt-1),id),current=caseBy(projectJournal(changed),id);
+ assert.equal(before.withdrawn,false);assert.equal(before.decision,null);
+ assert.equal(current.withdrawn,true);assert.equal(current.decision,null);
+ assert.equal(outcomeDocumented(current),false);
+ assert.match(handoff(current,projectJournal(changed).sources),/Status: Case withdrawn/);
+});
 test('source and collection corrections preserve earlier projections',()=>{
  const changed=copy(),source=latest.sources[0];
  const earlier=journal.entries.length;

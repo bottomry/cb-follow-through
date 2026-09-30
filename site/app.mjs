@@ -34,7 +34,7 @@ function renderList() {
   (currentId===c.id?'aria-current="true"':'')+'><span class="case-number">'+esc(c.number)+' / '+esc(c.domain)+
   '</span><strong>'+esc(c.title)+' <span>↗</span></strong><small>'+esc(c.decision_maker)+' · '+esc(c.subject)+
   '</small><span class="badge '+(outcomeDocumented(c)?'green':'amber')+'">'+
-  (outcomeDocumented(c)?'● Outcome documented':'◌ Outcome unknown')+'</span></a>').join('')||
+  (c.withdrawn?'⊘ Case withdrawn':outcomeDocumented(c)?'● Outcome documented':'◌ Outcome unknown')+'</span></a>').join('')||
   '<p class="empty">No matching casefiles. Try another subject or choose all statuses.</p>';
 }
 function readDraft(id) {try{return localStorage.getItem('follow-through:'+id)||'';}catch{return '';}}
@@ -42,10 +42,12 @@ function entryDescription(entry,casefile) {
  const payload=entry.payload;
  const action={
   case_opened:'Case opened',evidence_added:'Evidence added',evidence_corrected:'Evidence corrected',
-  requirement_added:'Requirement recorded',requirement_assessed:'Requirement assessed',case_updated:'Case description updated'
+  evidence_retracted:'Evidence retracted',requirement_added:'Requirement recorded',
+  requirement_assessed:'Requirement assessed',requirement_corrected:'Requirement corrected',
+  requirement_retracted:'Requirement retracted',case_retracted:'Case withdrawn',case_updated:'Case description updated'
  }[entry.kind]||entry.kind;
  const requirement=casefile.requirements.find(r=>r.id===payload.requirement_id);
- return action+': '+(payload.title||payload.text||payload.replacement?.title||requirement?.text||payload.reason||payload.id);
+ return action+': '+(payload.title||payload.text||payload.replacement?.title||payload.replacement?.text||requirement?.text||payload.reason||payload.id);
 }
 function renderCase() {
  const base=data.cases.find(c=>c.id===currentId)||data.cases[0];
@@ -79,8 +81,12 @@ function renderCase() {
  const requirements=c.requirements.map(r=>'<article class="request"><span class="badge '+
   (r.state==='documented'?'green':'amber')+'">'+(r.state==='documented'?'Documented':'Not established')+
   '</span><div><h4>'+esc(r.text)+'</h4><p>'+esc(r.note)+'</p>'+
-  sourceButtons([...new Set([...r.source_ids,...r.assessment_source_ids])])+'</div></article>').join('')||
+  sourceButtons([...new Set([...r.source_ids,...r.assessment_source_ids])])+correctionHTML(r)+'</div></article>').join('')||
   '<p class="empty">No requirements are included at this step.</p>';
+ const repairs=c.history.filter(row=>row.kind.endsWith('_corrected')||row.kind.endsWith('_retracted')).map(row=>
+  '<article class="request"><span class="badge amber">Audit</span><div><h4>'+esc(row.kind.replaceAll('_',' '))+
+  '</h4><p>'+esc(row.reason)+'</p>'+sourceButtons(row.source_ids)+'</div></article>').join('')||
+  '<p class="empty">No corrections or retractions are included at this step.</p>';
  const trail=latest?
   '<p class="lead">'+esc(c.summary)+'</p>':
   '<p class="lead">This replay includes the journal through entry '+sequence+
@@ -93,7 +99,7 @@ function renderCase() {
   esc(c.title)+'</h2><button id="export">↓ Export brief</button></div><p class="subtitle">'+esc(latest?c.subtitle:c.subject)+
   '</p><div class="tags"><span>'+esc(c.decision_maker)+'</span><span>'+esc(c.implementer)+
   '</span><span>'+esc(c.subject)+'</span><span class="badge '+(done?'green':'amber')+'">'+
-  (done?'Outcome documented':'Outcome unknown in this corpus')+'</span></div></div>'+
+  (c.withdrawn?'Case withdrawn':done?'Outcome documented':'Outcome unknown in this corpus')+'</span></div></div>'+
   '<section class="replay"><div class="replay-title"><div><p class="eyebrow">REPLAY THE EVIDENCE LEDGER</p><h3>'+
   'What changed in the record?</h3></div><span id="replay-count" aria-live="polite">Step '+
   (replayIndex+1)+' of '+steps.length+'</span></div><div class="replay-controls"><button id="previous" '+
@@ -103,12 +109,13 @@ function renderCase() {
   ' aria-label="Next ledger entry">Next →</button></div><p class="replay-entry"><strong>'+
   esc(entryDescription(entry,c))+'</strong><br>Recorded in this dataset '+esc(dateLabel(entry.recorded_on))+
   ' · Entry '+sequence+(entry.payload.reason?' · '+esc(entry.payload.reason):'')+
-  '</p><p class="replay-note">Replay follows additions to this dataset, not what residents knew on each historical date. '+
+  '</p>'+sourceButtons(entry.payload.source_ids||[])+'<p class="replay-note">Replay follows additions to this dataset, not what residents knew on each historical date. '+
   '<a href="./data/journal.json">Inspect the complete journal</a>.</p></section>'+
   chain+trail+decision+
   '<section><div class="section-title"><h3>The evidence trail</h3><span>'+events.length+
   ' linked records</span></div><div class="timeline">'+timeline+'</div></section>'+
   '<section><div class="section-title"><h3>What was asked. What is known.</h3></div>'+requirements+'</section>'+
+  '<section><div class="section-title"><h3>Corrections and retractions</h3></div>'+repairs+'</section>'+
   context+'<section class="draft"><p class="eyebrow">TAKE THE NEXT STEP</p><h3>A useful question, ready to pursue.</h3><p>'+
   esc(latest?c.next_action:'Continue the ledger before choosing a follow-up question.')+'</p><label for="note">Your follow-up notes or candidate source URLs</label>'+
   '<textarea id="note" rows="4" placeholder="What would close the remaining evidence gap?"></textarea>'+
