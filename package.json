@@ -1,0 +1,16 @@
+{
+  "name": "cb-follow-through",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Source-linked community board decisions and documented agency outcomes",
+  "engines": {"node": ">=22"},
+  "scripts": {
+    "test": "node --test test/*.test.mjs",
+    "lint": "node --check site/app.mjs && node --check site/model.mjs && node --check tools/serve.mjs && node --check tools/build.mjs",
+    "build": "node tools/build.mjs",
+    "start": "node tools/serve.mjs",
+    "check": "npm run lint && npm test && npm run build"
+  },
+  "license": "MIT"
+}
