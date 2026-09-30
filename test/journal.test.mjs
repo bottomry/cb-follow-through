@@ -165,6 +165,36 @@ test('source links, chronological order and exported unknowns remain traceable',
  assert.match(columbus,/https:\/\/www.nyc.gov/);
  assert.equal(dateLabel('2015-02'),'Feb 2015');
 });
+test('seed exports preserve limits without leaking them into partial replay',()=>{
+ const expected={
+  'amsterdam-avenue':[
+   'The documented result is installation, not proof that every requested condition was met.',
+   'No independent field inspection or current-condition survey is included.'
+  ],
+  'chrystie-street':[
+   'The original February 2015 resolution is represented only through the May 2016 retrospective account.',
+   'Construction completion is documented; causal impact and fulfillment of every design detail are not evaluated.'
+  ],
+  'columbus-avenue':[
+   '2012 is the date of confirmation in the selected DOT document, not the year construction finished.',
+   'The accepted six-month evaluation and publication condition is distinct from the rejected amendment that would have required CB7 participation in decisions to revisit, end, expand, modify or make the lane permanent.',
+   'The October 2011 return presentation does not by itself establish timely compliance with the accepted six-month condition or publication to the community.'
+  ],
+  'st-marks-place':[
+   'This is not a claim that DOT did nothing. It is a gap in the selected evidence.',
+   'The source was inherited from a reviewed public CityScroll pilot; the original PDF could not be fetched again.'
+  ]
+ };
+ for(const [id,limits] of Object.entries(expected)) {
+  const c=caseBy(latest,id),brief=handoff(c,latest.sources);
+  assert.deepEqual(c.limits,limits);
+  for(const limit of limits)assert.equal(brief.includes(limit),true);
+ }
+ const id='st-marks-place',step=caseSteps(journal,id)[0],view=projectJournal(journal,step);
+ const partial=handoff(caseBy(view,id),view.sources,'',step,false);
+ assert.match(partial,/LIMITS — PARTIAL REPLAY\nLatest casefile limits are omitted/);
+ for(const limit of expected[id])assert.equal(partial.includes(limit),false);
+});
 test('invalid ordering, missing references and false completion claims fail closed',()=>{
  for(const mutate of [
   d=>d.entries[3].seq=2,

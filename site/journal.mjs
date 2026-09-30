@@ -169,7 +169,7 @@ export function corpusMetadata(data) {
  return {reviewDate:dateLabel(data.reviewed_on),sourceCount,caseCount,
   sourceSummary:sourceCount+' public document'+(sourceCount===1?'':'s')+' behind '+caseCount+' casefile'+(caseCount===1?'':'s')+'.'};
 }
-export function handoff(c,sources,note='',sequence=null) {
+export function handoff(c,sources,note='',sequence=null,latest=sequence===null) {
  const evidence=[...(c.decision?[c.decision]:[]),...c.events];
  const ids=new Set([...evidence.flatMap(e=>[...e.source_ids,...(e.correction_source_ids||[])]),
    ...c.requirements.flatMap(r=>[...r.source_ids,...r.assessment_source_ids])]);
@@ -180,10 +180,12 @@ export function handoff(c,sources,note='',sequence=null) {
   (e.correction_reason?'\nCorrection: '+e.correction_reason+'\nCorrection sources: '+cite(e.correction_source_ids):'')).join('\n\n');
  const requirements=c.requirements.map(r=>r.state.toUpperCase()+' — '+r.text+'\n'+r.note+
   '\nSources: '+cite([...new Set([...r.source_ids,...r.assessment_source_ids])])).join('\n\n');
+ const limits=latest?c.limits.join('\n'):'Latest casefile limits are omitted from this partial replay.';
  const sourceRows=sources.filter(s=>ids.has(s.id)).map(s=>'['+s.id+'] '+s.title+'\n'+s.locator+'\n'+s.url+'\n'+s.review_method).join('\n\n');
  return c.title+' — '+c.decision_maker+'\n'+c.subject+'\nLedger: '+(sequence??'latest')+
   '\nStatus: '+(outcomeDocumented(c)?'Outcome documented':'Outcome unknown in this corpus')+
   '\n\nEVIDENCE TRAIL\n'+(eventRows||'(No decision or action in this replay step.)')+
   '\n\nREQUIREMENTS\n'+(requirements||'(No requirements recorded at this replay step.)')+
+  '\n\n'+(latest?'LIMITS':'LIMITS — PARTIAL REPLAY')+'\n'+limits+
   '\n\nSOURCES\n'+sourceRows+'\n\nLOCAL DRAFT — UNREVIEWED\n'+(note||'(No draft)')+'\n';
 }

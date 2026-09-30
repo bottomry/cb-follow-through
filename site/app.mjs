@@ -122,7 +122,7 @@ function renderCase() {
   $('#saved').textContent='Saved in this browser only · unreviewed draft';}
   catch{$('#saved').textContent='Browser storage unavailable. Export your brief to keep these notes.';}};
  $('#clear').onclick=()=>{$('#note').value='';$('#note').oninput();};
- $('#export').onclick=()=>{const blob=new Blob([handoff(c,view.sources,$('#note').value,sequence)],{type:'text/plain;charset=utf-8'});
+ $('#export').onclick=()=>{const blob=new Blob([handoff(c,view.sources,$('#note').value,sequence,latest)],{type:'text/plain;charset=utf-8'});
   const url=URL.createObjectURL(blob),link=document.createElement('a');link.href=url;link.download=c.id+'-brief.txt';
   link.click();setTimeout(()=>URL.revokeObjectURL(url),1000);};
  renderList();
