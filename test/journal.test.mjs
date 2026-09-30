@@ -63,6 +63,27 @@ test('source and collection corrections preserve earlier projections',()=>{
  assert.equal(before.reviewed_on,'2026-09-29');assert.equal(after.reviewed_on,'2026-09-30');
  assert.deepEqual(caseSteps(changed,'amsterdam-avenue').slice(-2),[earlier+1,earlier+2]);
 });
+test('replay includes source corrections only after the case cites the source',()=>{
+ const changed=copy(),sourceId='replay-correction-source',caseId='replay-correction-case';
+ const source={id:sourceId,title:'Replay correction fixture',publisher:'Fixture publisher',
+  url:'https://example.org/replay',locator:'Original locator',excerpt:'Fixture decision.',
+  review_method:'Fictional test fixture; never published.'};
+ add(changed,'source_added',null,source);
+ add(changed,'case_opened',caseId,{id:caseId,number:'T2',title:'Replay correction timing',
+  subtitle:'Fictional test case',decision_maker:'Fixture board',implementer:'Fixture office',
+  subject:'Fixture subject',period:'2026',domain:'Testing',summary:'A replay timing fixture.',
+  match:'The fixture identifiers match.',next_action:'No action.',limits:['No real-world claim is made.']});
+ const beforeCitation=add(changed,'source_corrected',null,{target_id:sourceId,reason:'Before citation.',
+  replacement:{...source,locator:'Corrected before citation'}});
+ add(changed,'evidence_added',caseId,{id:'replay-decision',type:'decision',date:'2026-09-30',
+  date_precision:'day',title:'Fixture decision',summary:'Fixture decision recorded.',result:'Recorded',
+  result_basis:'Fictional fixture.',basis:'Fictional fixture.',reviewed:true,source_ids:[sourceId]});
+ const afterCitation=add(changed,'source_corrected',null,{target_id:sourceId,reason:'After citation.',
+  replacement:{...source,locator:'Corrected after citation'}});
+ const steps=caseSteps(changed,caseId);
+ assert.equal(steps.includes(beforeCitation),false);
+ assert.equal(steps.includes(afterCitation),true);
+});
 test('later decisions retain prior decisions in the evidence trail',()=>{
  const changed=copy(),id='st-marks-place';
  const second={id:'later-decision-test',type:'decision',date:'2026-09-30',date_precision:'day',

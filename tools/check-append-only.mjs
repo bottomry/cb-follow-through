@@ -2,14 +2,27 @@ import {spawnSync} from 'node:child_process';
 import {readFileSync} from 'node:fs';
 import {isDeepStrictEqual} from 'node:util';
 const path='site/data/journal.json';
+const zeroSha=/^0{40}$/;
 function git(...args) {
  const result=spawnSync('git',args,{encoding:'utf8'});
  if(result.error)throw result.error;
  return result;
 }
+function eventBase() {
+ if(!process.env.GITHUB_EVENT_NAME || !process.env.GITHUB_EVENT_PATH)return '';
+ const event=JSON.parse(readFileSync(process.env.GITHUB_EVENT_PATH,'utf8'));
+ if(process.env.GITHUB_EVENT_NAME==='pull_request')return event.pull_request?.base?.sha||'';
+ if(process.env.GITHUB_EVENT_NAME==='push')return event.before||'';
+ return '';
+}
+function fallbackBase(branch) {
+ if(branch!=='main' && git('rev-parse','--verify','origin/main').status===0)return 'origin/main';
+ return 'HEAD^';
+}
 const current=JSON.parse(readFileSync(path,'utf8'));
 const branch=process.env.GITHUB_REF_NAME||git('branch','--show-current').stdout.trim();
-const base=process.env.JOURNAL_BASE_REF || (branch==='main'?'HEAD^':'origin/main');
+const selected=process.env.JOURNAL_BASE_REF||eventBase();
+const base=!selected||zeroSha.test(selected)?fallbackBase(branch):selected;
 if(git('rev-parse','--verify',base).status!==0)throw Error('Cannot verify journal base '+base);
 const previous=git('show',base+':'+path);
 if(previous.status!==0) {

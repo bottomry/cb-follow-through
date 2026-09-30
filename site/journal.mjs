@@ -139,10 +139,17 @@ export function caseSteps(journal,id) {
  const c=projectJournal(journal).cases.find(row=>row.id===id);
  if(!c)return [];
  const opened=journal.entries.find(entry=>entry.kind==='case_opened'&&entry.case_id===id).seq;
- const sources=new Set(journal.entries.filter(entry=>entry.case_id===id).flatMap(entry=>
-  [...(entry.payload?.source_ids||[]),...(entry.payload?.replacement?.source_ids||[])]));
- return journal.entries.filter(entry=>entry.seq>=opened && (entry.case_id===id || entry.kind==='collection_updated' ||
-  (entry.kind==='source_corrected'&&sources.has(entry.payload.target_id)))).map(entry=>entry.seq);
+ const sources=new Set(),steps=[];
+ for(const entry of journal.entries) {
+  if(entry.seq<opened)continue;
+  if(entry.case_id===id) {
+   steps.push(entry.seq);
+   for(const sourceId of [...(entry.payload?.source_ids||[]),...(entry.payload?.replacement?.source_ids||[])])
+    sources.add(sourceId);
+  } else if(entry.kind==='collection_updated' ||
+    (entry.kind==='source_corrected'&&sources.has(entry.payload.target_id)))steps.push(entry.seq);
+ }
+ return steps;
 }
 export const timelineEvents=c=>[...(c.decision?[c.decision]:[]),...c.events].sort((a,b)=>a.date.localeCompare(b.date)||a.ledger_seq-b.ledger_seq);
 export const hasReviewedEvent=(c,type)=>c.events.some(e=>e.type===type&&e.reviewed===true&&e.source_ids.length);
