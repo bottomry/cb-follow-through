@@ -64,17 +64,8 @@ else if(git('show',base+':'+path).status!==0) {
   throw Error('Evidence journal rewrites or removes earlier entries. Append a correction instead.');
  console.log('Preserved '+old.entries.length+' earlier journal entries.');
 }
-if(dispatch) {
- const history=git('rev-list','HEAD','--',path);
- if(history.status!==0)throw Error('Cannot inspect journal ancestry.');
- for(const ref of history.stdout.trim().split(/\s+/).filter(Boolean)) {
-  const version=git('show',ref+':'+path);
-  if(version.status!==0||!preserves(JSON.parse(version.stdout),current))
-   throw Error('Evidence journal rewrites or removes entries from its ancestry.');
- }
- if(publishedBase) {
-  const published=JSON.parse(readFileSync(publishedBase,'utf8'));
-  if(!preserves(published,current))
-   throw Error('Evidence journal rewrites or removes entries from the published baseline.');
- }
+if(dispatch&&publishedBase) {
+ const published=JSON.parse(readFileSync(publishedBase,'utf8'));
+ if(!preserves(published,current))
+  throw Error('Evidence journal rewrites or removes entries from the published baseline.');
 }

@@ -113,7 +113,7 @@ test('history gate accepts additions and rejects rewritten prior entries',async(
    GITHUB_EVENT_NAME:'workflow_dispatch',GITHUB_REF_NAME:'main',JOURNAL_PUBLISHED_BASE:published
   });
   assert.notEqual(dispatched.status,0);
-  assert.match(dispatched.stderr,/entries from its ancestry/);
+  assert.match(dispatched.stderr,/published baseline/);
   const shallow=join(dir,'shallow');
   assert.equal(run('git',['clone','-q','--depth=1','file://'+dir,shallow]).status,0);
   const shallowCheck=spawnSync(process.execPath,[checker],{
@@ -158,5 +158,19 @@ test('a first branch push compares with its merge base, not moving main',async()
   });
   assert.equal(checked.status,0,checked.stderr);
   assert.match(checked.stdout,new RegExp('Preserved '+seed.entries.length+' earlier journal entries'));
+  assert.equal(run('git',['switch','-q','moving-main']).status,0);
+  assert.equal(run('git',['merge','-q','-s','ours','feature','-m','Merge feature']).status,0);
+  const merged=append('Main review');
+  merged.entries.push({seq:merged.entries.length+1,recorded_on:'2026-09-30',
+   kind:'collection_updated',payload:{reason:'Feature review',changes:{reviewed_on:'2026-09-30'}}});
+  await writeFile(path,JSON.stringify(merged));
+  assert.equal(run('git',['add','site/data/journal.json']).status,0);
+  assert.equal(run('git',['commit','--amend','-qm','Merge both additions']).status,0);
+  const published=join(dir,'published-journal.json');
+  await writeFile(published,JSON.stringify(seed));
+  const deployed=run(process.execPath,[checker],{
+   GITHUB_EVENT_NAME:'workflow_dispatch',GITHUB_REF_NAME:'main',JOURNAL_PUBLISHED_BASE:published
+  });
+  assert.equal(deployed.status,0,deployed.stderr);
  } finally {await rm(dir,{recursive:true,force:true});}
 });
