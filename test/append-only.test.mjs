@@ -10,7 +10,8 @@ const seed=JSON.parse(await readFile(new URL('../site/data/journal.json',import.
 test('a clean root checkout accepts its initial journal but checks explicit bases',async()=>{
  const dir=await mkdtemp(join(tmpdir(),'follow-through-root-'));
  const path=join(dir,'site/data/journal.json');
- const run=(cmd,args=[],env={})=>spawnSync(cmd,args,{cwd:dir,encoding:'utf8',env:{...process.env,...env}});
+ const run=(cmd,args=[],env={})=>spawnSync(cmd,args,{cwd:dir,encoding:'utf8',
+  env:{...process.env,JOURNAL_PUBLISHED_BASE:'',JOURNAL_INITIAL_PUBLISH:'',...env}});
  try {
   await mkdir(join(dir,'site/data'),{recursive:true});
   await writeFile(path,JSON.stringify(seed));
@@ -18,8 +19,13 @@ test('a clean root checkout accepts its initial journal but checks explicit base
    ['config','user.name','Fixture'],['add','site/data/journal.json'],['commit','-qm','Public root']])
    assert.equal(run('git',args).status,0);
   assert.equal(run(process.execPath,[checker]).status,0);
-  assert.equal(run(process.execPath,[checker],{
+  const untrustedDispatch=run(process.execPath,[checker],{
    GITHUB_EVENT_NAME:'workflow_dispatch',GITHUB_REF_NAME:'main'
+  });
+  assert.notEqual(untrustedDispatch.status,0);
+  assert.match(untrustedDispatch.stderr,/requires a published journal baseline/);
+  assert.equal(run(process.execPath,[checker],{
+   GITHUB_EVENT_NAME:'workflow_dispatch',GITHUB_REF_NAME:'main',JOURNAL_INITIAL_PUBLISH:'1'
   }).status,0);
   const eventPath=join(dir,'push-event.json');
   await writeFile(eventPath,JSON.stringify({before:'a'.repeat(40)}));
@@ -41,17 +47,27 @@ test('a clean root checkout accepts its initial journal but checks explicit base
   assert.notEqual(dirtyRoot.status,0);
   assert.match(dirtyRoot.stderr,/differs from the committed initial journal/);
   const dirtyDispatch=run(process.execPath,[checker],{
-   GITHUB_EVENT_NAME:'workflow_dispatch',GITHUB_REF_NAME:'main'
+   GITHUB_EVENT_NAME:'workflow_dispatch',GITHUB_REF_NAME:'main',JOURNAL_INITIAL_PUBLISH:'1'
   });
   assert.notEqual(dirtyDispatch.status,0);
   assert.match(dirtyDispatch.stderr,/differs from the committed initial journal/);
   assert.notEqual(run(process.execPath,[checker],{JOURNAL_BASE_REF:'HEAD'}).status,0);
+  const published=join(dir,'published-journal.json');
+  await writeFile(published,JSON.stringify(seed));
+  assert.equal(run('git',['add','site/data/journal.json']).status,0);
+  assert.equal(run('git',['commit','--amend','-qm','Replacement root']).status,0);
+  const replacedRoot=run(process.execPath,[checker],{
+   GITHUB_EVENT_NAME:'workflow_dispatch',GITHUB_REF_NAME:'main',JOURNAL_PUBLISHED_BASE:published
+  });
+  assert.notEqual(replacedRoot.status,0);
+  assert.match(replacedRoot.stderr,/published baseline/);
  } finally {await rm(dir,{recursive:true,force:true});}
 });
 test('history gate accepts additions and rejects rewritten prior entries',async()=>{
  const dir=await mkdtemp(join(tmpdir(),'follow-through-journal-'));
  const path=join(dir,'site/data/journal.json');
- const run=(cmd,args=[],env={})=>spawnSync(cmd,args,{cwd:dir,encoding:'utf8',env:{...process.env,...env}});
+ const run=(cmd,args=[],env={})=>spawnSync(cmd,args,{cwd:dir,encoding:'utf8',
+  env:{...process.env,JOURNAL_PUBLISHED_BASE:'',JOURNAL_INITIAL_PUBLISH:'',...env}});
  try {
   await mkdir(join(dir,'site/data'),{recursive:true});
   await writeFile(path,JSON.stringify(seed));
@@ -91,6 +107,13 @@ test('history gate accepts additions and rejects rewritten prior entries',async(
   });
   assert.notEqual(pushed.status,0);
   assert.match(pushed.stderr,/rewrites or removes earlier entries/);
+  const published=join(dir,'published-journal.json');
+  await writeFile(published,JSON.stringify(seed));
+  const dispatched=run(process.execPath,[checker],{
+   GITHUB_EVENT_NAME:'workflow_dispatch',GITHUB_REF_NAME:'main',JOURNAL_PUBLISHED_BASE:published
+  });
+  assert.notEqual(dispatched.status,0);
+  assert.match(dispatched.stderr,/entries from its ancestry/);
   const shallow=join(dir,'shallow');
   assert.equal(run('git',['clone','-q','--depth=1','file://'+dir,shallow]).status,0);
   const shallowCheck=spawnSync(process.execPath,[checker],{
@@ -103,7 +126,8 @@ test('history gate accepts additions and rejects rewritten prior entries',async(
 test('a first branch push compares with its merge base, not moving main',async()=>{
  const dir=await mkdtemp(join(tmpdir(),'follow-through-branch-'));
  const path=join(dir,'site/data/journal.json');
- const run=(cmd,args=[],env={})=>spawnSync(cmd,args,{cwd:dir,encoding:'utf8',env:{...process.env,...env}});
+ const run=(cmd,args=[],env={})=>spawnSync(cmd,args,{cwd:dir,encoding:'utf8',
+  env:{...process.env,JOURNAL_PUBLISHED_BASE:'',JOURNAL_INITIAL_PUBLISH:'',...env}});
  const append=reason=>{
   const data=structuredClone(seed);data.entries.push({seq:data.entries.length+1,recorded_on:'2026-09-30',
    kind:'collection_updated',payload:{reason,changes:{reviewed_on:'2026-09-30'}}});return data;

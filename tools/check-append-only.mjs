@@ -8,6 +8,11 @@ function git(...args) {
  if(result.error)throw result.error;
  return result;
 }
+function preserves(previous,next) {
+ return Array.isArray(previous.entries)&&Array.isArray(next.entries)&&
+  next.entries.length>=previous.entries.length&&
+  previous.entries.every((entry,index)=>isDeepStrictEqual(entry,next.entries[index]));
+}
 function eventBase() {
  if(!process.env.GITHUB_EVENT_NAME || !process.env.GITHUB_EVENT_PATH)return '';
  const event=JSON.parse(readFileSync(process.env.GITHUB_EVENT_PATH,'utf8'));
@@ -25,6 +30,8 @@ function fallbackBase(branch) {
 const current=JSON.parse(readFileSync(path,'utf8'));
 const branch=process.env.GITHUB_REF_NAME||git('branch','--show-current').stdout.trim();
 const explicitBase=process.env.JOURNAL_BASE_REF;
+const publishedBase=process.env.JOURNAL_PUBLISHED_BASE;
+const initialPublish=process.env.JOURNAL_INITIAL_PUBLISH==='1';
 const selected=explicitBase||eventBase();
 const base=!selected||(!explicitBase&&zeroSha.test(selected))?fallbackBase(branch):selected;
 const baseExists=git('rev-parse','--verify',base+'^{commit}').status===0;
@@ -32,7 +39,11 @@ const headObject=git('cat-file','-p','HEAD');
 const headHeader=headObject.stdout.split('\n\n',1)[0];
 const rootCommit=headObject.status===0 && !/^parent /m.test(headHeader);
 const initialPush=process.env.GITHUB_EVENT_NAME==='push' && zeroSha.test(selected);
-const baseFreeRun=!process.env.GITHUB_EVENT_NAME||process.env.GITHUB_EVENT_NAME==='workflow_dispatch';
+const dispatch=process.env.GITHUB_EVENT_NAME==='workflow_dispatch';
+const trustedDispatch=dispatch&&(Boolean(publishedBase)||(initialPublish&&rootCommit));
+if(dispatch&&!trustedDispatch)
+ throw Error('Workflow dispatch requires a published journal baseline or a root initial publish.');
+const baseFreeRun=!process.env.GITHUB_EVENT_NAME||trustedDispatch;
 const rootBootstrap=!baseExists && rootCommit && !explicitBase &&
  (initialPush||(baseFreeRun&&base==='HEAD^'));
 if(rootBootstrap) {
@@ -49,9 +60,21 @@ else if(git('show',base+':'+path).status!==0) {
 } else {
  const previous=git('show',base+':'+path);
  const old=JSON.parse(previous.stdout);
- if(!Array.isArray(old.entries)||!Array.isArray(current.entries)||
-    current.entries.length<old.entries.length||
-    !old.entries.every((entry,index)=>isDeepStrictEqual(entry,current.entries[index])))
+ if(!preserves(old,current))
   throw Error('Evidence journal rewrites or removes earlier entries. Append a correction instead.');
  console.log('Preserved '+old.entries.length+' earlier journal entries.');
+}
+if(dispatch) {
+ const history=git('rev-list','HEAD','--',path);
+ if(history.status!==0)throw Error('Cannot inspect journal ancestry.');
+ for(const ref of history.stdout.trim().split(/\s+/).filter(Boolean)) {
+  const version=git('show',ref+':'+path);
+  if(version.status!==0||!preserves(JSON.parse(version.stdout),current))
+   throw Error('Evidence journal rewrites or removes entries from its ancestry.');
+ }
+ if(publishedBase) {
+  const published=JSON.parse(readFileSync(publishedBase,'utf8'));
+  if(!preserves(published,current))
+   throw Error('Evidence journal rewrites or removes entries from the published baseline.');
+ }
 }
