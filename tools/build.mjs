@@ -1,8 +1,8 @@
 import {cp,mkdir,readFile,rm,writeFile} from 'node:fs/promises';
 import {fileURLToPath} from 'node:url';
-import {validate} from '../site/model.mjs';
+import {validateJournal} from '../site/journal.mjs';
 const root=new URL('../',import.meta.url);
-validate(JSON.parse(await readFile(new URL('site/data/cases.json',root),'utf8')));
+validateJournal(JSON.parse(await readFile(new URL('site/data/journal.json',root),'utf8')));
 await rm(new URL('dist/',root),{recursive:true,force:true});
 await mkdir(new URL('dist/',root),{recursive:true});
 await cp(new URL('site/',root),new URL('dist/',root),{recursive:true});
