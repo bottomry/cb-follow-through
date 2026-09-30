@@ -129,6 +129,9 @@ test('a cited case tombstone visibly withdraws a case without a decision',()=>{
  assert.equal(before.withdrawn,false);assert.equal(before.decision,null);
  assert.equal(current.withdrawn,true);assert.equal(current.decision,null);
  assert.equal(outcomeDocumented(current),false);
+ assert.deepEqual(filterCases([current],'','all'),[current]);
+ assert.deepEqual(filterCases([current],'','unknown'),[]);
+ assert.deepEqual(filterCases([current],'','documented'),[]);
  assert.match(handoff(current,projectJournal(changed).sources),/Status: Case withdrawn/);
 });
 test('source and collection corrections preserve earlier projections',()=>{

@@ -193,7 +193,8 @@ export const hasReviewedEvent=(c,type)=>!c.withdrawn&&c.events.some(e=>e.type===
 export const outcomeDocumented=c=>hasReviewedEvent(c,'outcome');
 export function filterCases(cases,query='',status='all') {
  const q=query.trim().toLowerCase();
- return cases.filter(c=>(status==='all'||outcomeDocumented(c)===(status==='documented')) &&
+ return cases.filter(c=>(status==='all'||(!c.withdrawn&&
+  (status==='documented'?outcomeDocumented(c):status==='unknown'&&!outcomeDocumented(c)))) &&
  [c.title,c.decision_maker,c.implementer,c.subject,c.domain,c.place||'',c.summary].join(' ').toLowerCase().includes(q));
 }
 export function dateLabel(value) {
