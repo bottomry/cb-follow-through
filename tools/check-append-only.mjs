@@ -33,6 +33,10 @@ const rootCommit=headObject.status===0 && !/^parent /m.test(headHeader);
 const rootBootstrap=!baseExists && rootCommit && !process.env.JOURNAL_BASE_REF &&
  (base==='HEAD^'||process.env.GITHUB_EVENT_NAME==='push');
 if(rootBootstrap) {
+ const committed=git('show','HEAD:'+path);
+ if(committed.status!==0)throw Error('Cannot read committed root journal.');
+ if(!isDeepStrictEqual(JSON.parse(committed.stdout),current))
+  throw Error('Root journal differs from the committed initial journal.');
  console.log('Root commit has no reachable prior journal; initial journal accepted.');
 } else if(!baseExists)throw Error('Cannot verify journal base '+base);
 else if(git('show',base+':'+path).status!==0) {

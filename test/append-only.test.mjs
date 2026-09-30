@@ -28,6 +28,9 @@ test('a clean root checkout accepts its initial journal but checks explicit base
   assert.notEqual(run(process.execPath,[checker],{JOURNAL_BASE_REF:blob}).status,0);
   const altered=structuredClone(seed);altered.entries[0].payload.scope='Rewritten scope';
   await writeFile(path,JSON.stringify(altered));
+  const dirtyRoot=run(process.execPath,[checker]);
+  assert.notEqual(dirtyRoot.status,0);
+  assert.match(dirtyRoot.stderr,/differs from the committed initial journal/);
   assert.notEqual(run(process.execPath,[checker],{JOURNAL_BASE_REF:'HEAD'}).status,0);
  } finally {await rm(dir,{recursive:true,force:true});}
 });
