@@ -20,6 +20,12 @@ test('a clean root checkout accepts its initial journal but checks explicit base
   assert.equal(run(process.execPath,[checker]).status,0);
   const eventPath=join(dir,'push-event.json');
   await writeFile(eventPath,JSON.stringify({before:'a'.repeat(40)}));
+  const missingPrior=run(process.execPath,[checker],{
+   GITHUB_EVENT_NAME:'push',GITHUB_EVENT_PATH:eventPath,GITHUB_REF_NAME:'main'
+  });
+  assert.notEqual(missingPrior.status,0);
+  assert.match(missingPrior.stderr,/Cannot verify journal base a{40}/);
+  await writeFile(eventPath,JSON.stringify({before:'0'.repeat(40)}));
   assert.equal(run(process.execPath,[checker],{
    GITHUB_EVENT_NAME:'push',GITHUB_EVENT_PATH:eventPath,GITHUB_REF_NAME:'main'
   }).status,0);
