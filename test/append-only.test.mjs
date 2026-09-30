@@ -18,6 +18,9 @@ test('a clean root checkout accepts its initial journal but checks explicit base
    ['config','user.name','Fixture'],['add','site/data/journal.json'],['commit','-qm','Public root']])
    assert.equal(run('git',args).status,0);
   assert.equal(run(process.execPath,[checker]).status,0);
+  assert.equal(run(process.execPath,[checker],{
+   GITHUB_EVENT_NAME:'workflow_dispatch',GITHUB_REF_NAME:'main'
+  }).status,0);
   const eventPath=join(dir,'push-event.json');
   await writeFile(eventPath,JSON.stringify({before:'a'.repeat(40)}));
   const missingPrior=run(process.execPath,[checker],{
@@ -37,6 +40,11 @@ test('a clean root checkout accepts its initial journal but checks explicit base
   const dirtyRoot=run(process.execPath,[checker]);
   assert.notEqual(dirtyRoot.status,0);
   assert.match(dirtyRoot.stderr,/differs from the committed initial journal/);
+  const dirtyDispatch=run(process.execPath,[checker],{
+   GITHUB_EVENT_NAME:'workflow_dispatch',GITHUB_REF_NAME:'main'
+  });
+  assert.notEqual(dirtyDispatch.status,0);
+  assert.match(dirtyDispatch.stderr,/differs from the committed initial journal/);
   assert.notEqual(run(process.execPath,[checker],{JOURNAL_BASE_REF:'HEAD'}).status,0);
  } finally {await rm(dir,{recursive:true,force:true});}
 });

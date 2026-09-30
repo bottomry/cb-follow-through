@@ -32,8 +32,9 @@ const headObject=git('cat-file','-p','HEAD');
 const headHeader=headObject.stdout.split('\n\n',1)[0];
 const rootCommit=headObject.status===0 && !/^parent /m.test(headHeader);
 const initialPush=process.env.GITHUB_EVENT_NAME==='push' && zeroSha.test(selected);
+const baseFreeRun=!process.env.GITHUB_EVENT_NAME||process.env.GITHUB_EVENT_NAME==='workflow_dispatch';
 const rootBootstrap=!baseExists && rootCommit && !explicitBase &&
- (initialPush||(!process.env.GITHUB_EVENT_NAME&&base==='HEAD^'));
+ (initialPush||(baseFreeRun&&base==='HEAD^'));
 if(rootBootstrap) {
  const committed=git('show','HEAD:'+path);
  if(committed.status!==0)throw Error('Cannot read committed root journal.');
